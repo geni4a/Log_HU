@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hydroxyurea Dose Optimization Calculator</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  label { font-weight: bold; }
+  select, input[type="number"] { padding: 0.35rem; margin: 0.25rem 0; }
+  .required-asterisk { color: #c0392b; }
+  button { padding: 0.5rem 1rem; cursor: pointer; }
+  .navbar { margin-bottom: 0.5rem; }
+  .navbar button { margin-right: 0.5rem; }
+  .output-box { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <a href="index.html"><button type="button">Initial Dosing Calculator</button></a>
+  <a href="dose_optimize.html"><button type="button">Dose Optimization Calculator</button></a>
+  <a href="about.html"><button type="button">About</button></a>
+</div>
+<hr>
+
+<h2>Hydroxyurea Dose Optimization Calculator</h2>
+<h3>Enter Participant's Information</h3>
+
+<form id="optimizeForm">
+  <p>
+    <label>Weight (kg) <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="weight" min="0" required>
+  </p>
+
+  <h3>Hydroxyurea Info</h3>
+  <p>
+    <label>Current Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="dose" min="0" required>
+    &emsp;
+    <label>Formulation <span class="required-asterisk">*</span></label>
+    <select id="medType" required>
+      <option value="" disabled selected>Formulation</option>
+      <option value="liquid">Liquid</option>
+      <option value="capsule">Capsule</option>
+    </select>
+  </p>
+
+  <p>
+    <label>Has the patient missed multiple doses in the previous month? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="missed_yes" name="missed" value="true" required> <label for="missed_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="missed_no" name="missed" value="false" required> <label for="missed_no">No</label>
+  </p>
+
+  <p>
+    <label>How would you assess medication adherence? <span class="required-asterisk">*</span></label>
+    <select id="adherence" required>
+      <option value="" disabled selected>Rating</option>
+      <option value="1">1 - Poor</option>
+      <option value="2">2 - Fair</option>
+      <option value="3">3 - Good</option>
+      <option value="4">4 - Very Good</option>
+      <option value="5">5 - Excellent</option>
+    </select>
+  </p>
+
+  <p>
+    <label>Has the patient had a dose escalation in the past 3 months? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="esc_yes" name="escalation" value="true" required> <label for="esc_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="esc_no" name="escalation" value="false" required> <label for="esc_no">No</label>
+  </p>
+
+  <p>
+    <label>Has the patient had a dose reduction in the last 3 months? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="red_yes" name="reduction" value="true" required> <label for="red_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="red_no" name="reduction" value="false" required> <label for="red_no">No</label>
+  </p>
+
+  <p>
+    <label>Has the patient been acutely ill in the past 7 days? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="ill_yes" name="illness" value="true" required> <label for="ill_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="ill_no" name="illness" value="false" required> <label for="ill_no">No</label>
+  </p>
+
+  <h3>Lab Values</h3>
+  <p>
+    <label>Hemoglobin <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="hemoglobin" min="0" required> x10<sup>9</sup> g/L
+    &ensp;
+    <label>Absolute Neutrophil Count <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="neutrophil" min="0" required> x10<sup>9</sup>/L
+    <br><br>
+    <label>Absolute Reticulocyte Count <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="reticulocyte" min="0" required> x10<sup>9</sup>/L
+    &ensp;
+    <label>Platelet Count <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="platelet" min="0" required> x10<sup>9</sup>/L
+  </p>
+
+  <p><button type="submit">Submit</button></p>
+</form>
+
+<div class="output-box" id="outputBox" style="display:none;">
+  <h3>Dosing Recommendation</h3>
+  <p id="resultText"></p>
+</div>
+
+<script src="calculate.js"></script>
+<script src="optimize.js"></script>
+</body>
+</html>
