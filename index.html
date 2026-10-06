@@ -3,81 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hydroxyurea Initial Dosing Calculator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<title>Hydroxyurea Dose Optimization Calculator</title>
 <style>
   body { font-family: Arial, Helvetica, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #222; }
-  h2 { margin-bottom: 0.25rem; }
   label { font-weight: bold; }
   select, input[type="number"] { padding: 0.35rem; margin: 0.25rem 0; }
   .required-asterisk { color: #c0392b; }
-  #labDetailsBox { display: none; margin: 0.75rem 0; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; }
   button { padding: 0.5rem 1rem; cursor: pointer; }
-  .output-box, .feedback-box { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
-  pre { white-space: pre-wrap; font-family: inherit; margin: 0; }
-  textarea { width: 100%; box-sizing: border-box; }
+  .navbar { margin-bottom: 0.5rem; }
+  .navbar button { margin-right: 0.5rem; }
+  .output-box { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
 </style>
 </head>
 <body>
+<div class="navbar">
+  <a href="index.html"><button type="button">Initial Dosing Calculator</button></a>
+  <a href="dose_optimize.html"><button type="button">Dose Optimization Calculator</button></a>
+  <a href="about.html"><button type="button">About</button></a>
+</div>
+<hr>
 
+<h2>Hydroxyurea Dose Optimization Calculator</h2>
 <h3>Enter Participant's Information</h3>
 
-<form id="dosingForm">
+<form id="optimizeForm">
   <p>
-    <label>What formulation of hydroxyurea do you plan to use? <span class="required-asterisk">*</span></label><br>
-    <select id="medTypeDropdown" required>
-      <option value="" disabled selected>Formulation</option>
-      <option value="capsule_100">100 mg Capsule</option>
-      <option value="capsule_200">200 mg Capsule</option>
-      <option value="capsule_300">300 mg Capsule</option>
-      <option value="capsule_400">400 mg Capsule</option>
-      <option value="capsule_500">500 mg Capsule</option>
-      <option value="Siklos_1000">Siklos (eq 1000 mg dissolvable and scoreable tablets)</option>
-      <option value="liquid_100">Hydroxyurea liquid suspension 100 mg/mL</option>
-    </select>
+    <label>Weight (kg) <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="weight" min="0" required>
   </p>
 
+  <h3>Hydroxyurea Info</h3>
   <p>
-    <label>What is your desired starting dose? For children, we recommend a starting dose of 25 mg/kg. <span class="required-asterisk">*</span></label><br>
-    <select id="dosingDropdown" required>
-      <option value="" disabled selected>Dose</option>
-      <option value="15">15 mg/kg</option>
-      <option value="20">20 mg/kg</option>
-      <option value="25" selected>25 mg/kg</option>
-    </select>
-  </p>
-
-  <p>
-    <label>Do you have baseline laboratory values available? <span class="required-asterisk">*</span></label><br>
-    <input type="radio" id="labs_yes" name="labs" value="true" required> <label for="labs_yes">Yes</label>
+    <label>Current Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="dose" min="0" required>
     &emsp;
-    <input type="radio" id="labs_no" name="labs" value="false" required> <label for="labs_no">No</label>
+    <label>Formulation <span class="required-asterisk">*</span></label>
+    <select id="medType" required>
+      <option value="" disabled selected>Formulation</option>
+      <option value="liquid">Liquid</option>
+      <option value="capsule">Capsule</option>
+    </select>
   </p>
 
-  <div id="labDetailsBox">
-    <label>Hemoglobin</label>
-    <input type="number" step="any" id="hemoglobinInput" min="0"> x10<sup>9</sup> g/L
-    &ensp;
-    <label>Platelet Count</label>
-    <input type="number" step="any" id="plateletInput" min="0"> x10<sup>9</sup>/L
+  <p>
+    <label>Has the patient missed multiple doses in the previous month? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="missed_yes" name="missed" value="true" required> <label for="missed_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="missed_no" name="missed" value="false" required> <label for="missed_no">No</label>
+  </p>
+
+  <p>
+    <label>How would you assess medication adherence? <span class="required-asterisk">*</span></label>
+    <select id="adherence" required>
+      <option value="" disabled selected>Rating</option>
+      <option value="1">1 - Poor</option>
+      <option value="2">2 - Fair</option>
+      <option value="3">3 - Good</option>
+      <option value="4">4 - Very Good</option>
+      <option value="5">5 - Excellent</option>
+    </select>
+  </p>
+
+  <p>
+    <label>Has the patient had a dose escalation in the past 3 months? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="esc_yes" name="escalation" value="true" required> <label for="esc_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="esc_no" name="escalation" value="false" required> <label for="esc_no">No</label>
+  </p>
+
+  <p>
+    <label>Has the patient had a dose reduction in the last 3 months? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="red_yes" name="reduction" value="true" required> <label for="red_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="red_no" name="reduction" value="false" required> <label for="red_no">No</label>
+  </p>
+
+  <p>
+    <label>Has the patient been acutely ill in the past 7 days? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="ill_yes" name="illness" value="true" required> <label for="ill_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="ill_no" name="illness" value="false" required> <label for="ill_no">No</label>
+  </p>
+
+  <h3>Lab Values</h3>
+  <p>
+    <label>Hemoglobin <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="hemoglobin" min="0" required> x10<sup>9</sup> g/L
     &ensp;
     <label>Absolute Neutrophil Count <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="neutrophilInput" min="0"> x10<sup>9</sup>/L
+    <input type="number" step="any" id="neutrophil" min="0" required> x10<sup>9</sup>/L
     <br><br>
-    <label>Absolute Reticulocyte Count</label>
-    <input type="number" step="any" id="reticulocyteInput" min="0"> x10<sup>9</sup>/L
-    &ensp; OR &ensp;
-    <label>RBC Count</label>
-    <input type="number" step="any" id="rbcInput" min="0"> x10<sup>9</sup>/L
+    <label>Absolute Reticulocyte Count <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="reticulocyte" min="0" required> x10<sup>9</sup>/L
     &ensp;
-    <label>Reticulocyte percentage</label>
-    <input type="number" step="any" id="reticulocytePercentInput" min="0">%
-  </div>
-
-  <p>
-    <label>What is the patient's current weight in kg? <span class="required-asterisk">*</span></label><br>
-    <input type="number" step="any" id="weightInput" min="0" required>
+    <label>Platelet Count <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="platelet" min="0" required> x10<sup>9</sup>/L
   </p>
 
   <p><button type="submit">Submit</button></p>
@@ -85,18 +109,10 @@
 
 <div class="output-box" id="outputBox" style="display:none;">
   <h3>Dosing Recommendation</h3>
-  <pre id="resultText"></pre>
-  <button type="button" id="downloadPdfBtn" style="margin-top: 1rem;">⬇ Download as PDF</button>
-</div>
-
-<div class="feedback-box" id="feedbackBox" style="display:none;">
-  <h4>Leave Feedback</h4>
-  <textarea id="feedback-text" rows="3" placeholder="Was this recommendation helpful? Any issues?"></textarea>
-  <p><button type="button" id="submitFeedbackBtn">Submit Feedback</button></p>
-  <p id="feedback-status"></p>
+  <p id="resultText"></p>
 </div>
 
 <script src="calculate.js"></script>
-<script src="app.js"></script>
+<script src="optimize.js"></script>
 </body>
 </html>
