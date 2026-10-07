@@ -9,9 +9,12 @@
   button { padding: 0.5rem 1rem; cursor: pointer; }
   .navbar { margin-bottom: 0.5rem; }
   .navbar button { margin-right: 0.5rem; }
-  table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; }
-  th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; vertical-align: top; }
-  th { background: #f0f0f0; }
+  table.guidelines { border-collapse: collapse; width: 100%; margin: 0.75rem 0; border: 2px solid #000; }
+  table.guidelines th, table.guidelines td { border: 1px solid #000; padding: 0.6rem 0.75rem; text-align: left; vertical-align: middle; }
+  table.guidelines thead th, table.guidelines tr:first-child th { background: #fff; font-weight: bold; }
+  table.guidelines th.blank { width: 14%; }
+  table.guidelines th.rowhead { font-weight: bold; background: #fff; }
+  table.guidelines td { font-weight: normal; }
   .note { font-size: 0.9rem; color: #555; }
 </style>
 </head>
@@ -36,16 +39,35 @@
 
 <p><strong>Dose Optimization.</strong> This calculator evaluates current lab values only, using the criteria below, and returns one recommendation.</p>
 
-<h3>Laboratory criteria</h3>
-<p>Criteria are checked in this order, and the first one that matches is returned. ANC = absolute neutrophil count, Retic = absolute reticulocyte count, Plt = platelet count, Hb = hemoglobin.</p>
-<table>
-  <tr><th>Recommendation</th><th>Criteria</th></tr>
-  <tr><td>Dose increase recommended</td><td>ANC &gt; 3.0 <strong>and</strong> Plt &gt; 100 <strong>and</strong> Retic &gt; 50 <strong>and</strong> Hb &gt; 7</td></tr>
-  <tr><td>Dose adjustment for weight gain recommended</td><td>ANC &gt; 1.5 <strong>and</strong> Plt &gt; 120 <strong>and</strong> either (Retic &gt; 100 and Hb &lt; 8) or (Retic &gt; 75 and Hb &gt; 8)</td></tr>
-  <tr><td>Laboratory toxicity: dose hold/reduction recommended</td><td>ANC &lt; 0.75 <strong>or</strong> Plt &lt; 80 <strong>or</strong> (Retic &lt; 50 and Hb &lt; 7)</td></tr>
-  <tr><td>Dose is optimized, do not change</td><td>None of the above</td></tr>
+<h3>Hydroxyurea Dose Adjustment Guidelines</h3>
+<table class="guidelines">
+  <tr>
+    <th class="blank"></th>
+    <th>Escalation Criteria<br>(Dose Increase)</th>
+    <th>Criteria to Adjust Dose for Weight Gain if Dose &le;2.5 mg/kg from starting dose</th>
+    <th>Toxicity Criteria (Dose hold or reduction if toxicity persists beyond 2 weeks)</th>
+  </tr>
+  <tr>
+    <th class="rowhead">Neutrophils</th>
+    <td>&gt;3.0 x 10<sup>9</sup>/L</td>
+    <td>&gt;1.5 x 10<sup>9</sup>/L</td>
+    <td>&lt;0.75 x 10<sup>9</sup>/L</td>
+  </tr>
+  <tr>
+    <th class="rowhead">Platelets</th>
+    <td>&gt;100 x 10<sup>9</sup>/L</td>
+    <td>&gt;120 x 10<sup>9</sup>/L</td>
+    <td>&lt;80 x 10<sup>9</sup>/L</td>
+  </tr>
+  <tr>
+    <th class="rowhead">Reticulocytes and Hemoglobin</th>
+    <td>ARC &gt;50 x 10<sup>9</sup>/L if Hb &gt;7 g/dL</td>
+    <td>ARC &gt;100 x 10<sup>9</sup>/L if Hb &lt;8 g/dL<br>ARC &gt;75 if Hb &gt;8 g/dL</td>
+    <td>ARC &lt;50 x 10<sup>9</sup>/L if Hb &lt;7 g/dL</td>
+  </tr>
 </table>
-<p class="note">Neutrophil, reticulocyte, and platelet values are in x10<sup>9</sup>/L.</p>
+<p class="note">ARC = absolute reticulocyte count; Hb = hemoglobin. Within a column, all the neutrophil, platelet, and reticulocyte/hemoglobin criteria must be met, except for toxicity, where meeting any one criterion counts. If more than one column applies, the calculator reports them in this order: escalation, then weight-gain adjustment, then toxicity; otherwise it reports that the dose is optimized.</p>
+<p class="note">The calculator evaluates lab values only. It does not check how far the dose has moved from the starting dose, or whether toxicity has persisted beyond 2 weeks; these need to be confirmed by the clinician.</p>
 
 <p class="note"><strong>Clinical decision support tool only.</strong> Always confirm recommendations with a qualified clinician.</p>
 
