@@ -86,7 +86,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
             return "Laboratory Toxicity detected. Please review the patient's labs before calculating the initiating hydroxyurea dose.";
         }
     }
-    const MAX_DAILY_DOSE = 2000;
+    const MAX_DAILY_DOSE = 2500;
     const rawDose = weight * dosing;
     const dosePerDay = Math.min(rawDose, MAX_DAILY_DOSE);
     const dosePerWeek = dosePerDay * 7;
