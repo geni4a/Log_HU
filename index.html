@@ -50,6 +50,11 @@
 <h3>Enter Participant's Information</h3>
 
 <form id="dosingForm">
+   <p>
+    <label>What is the patient's current weight in kg? <span class="required-asterisk">*</span></label><br>
+    <input type="number" step="any" id="weightInput" min="0" required>
+  </p>
+
   <p>
     <label>What formulation of hydroxyurea do you plan to use? <span class="required-asterisk">*</span></label><br>
     <select id="medTypeDropdown" required>
@@ -101,11 +106,7 @@
     <input type="number" step="any" id="reticulocytePercentInput" min="0">%
   </div>
 
-  <p>
-    <label>What is the patient's current weight in kg? <span class="required-asterisk">*</span></label><br>
-    <input type="number" step="any" id="weightInput" min="0" required>
-  </p>
-
+ 
   <p><button type="submit">Submit</button></p>
 </form>
 
