@@ -19,6 +19,23 @@
   textarea { width: 100%; box-sizing: border-box; }
   .navbar { margin-bottom: 0.5rem; }
   .navbar button { margin-right: 0.5rem; }
+  .prefilled { background: #fff8d6; }
+  .smart-banner { margin: 0.75rem 0; padding: 0.75rem 1rem; border: 1px solid #c9b458; background: #fffbea; border-radius: 4px; font-size: 0.95rem; }
+  .smart-banner.error { border-color: #c0392b; background: #fdecea; }
+  .smart-banner ul { margin: 0.4rem 0; padding-left: 1.2rem; }
+  .smart-banner .stale, .smart-banner .warn { color: #8a4b00; }
+  .smart-banner .note { color: #555; margin-bottom: 0; }
+  .rec-report h3 { margin: 0 0 .25rem; }
+  .rec-report h4 { margin: 1.25rem 0 .25rem; }
+  .rec-date { color: #505050; font-size: .9rem; margin: 0 0 .5rem; }
+  .rec-report hr { border: 0; border-top: 1px solid #000; margin: .6rem 0 .8rem; }
+  .rec-sub { color: #3c3c3c; margin: 0 0 .4rem; font-size: .95rem; }
+  .rec-message { margin: 0; }
+  .rec-table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; font-size: .95rem; }
+  .rec-table th, .rec-table td { border: 1px solid #b4b4b4; padding: 5px 8px; text-align: left; }
+  .rec-table th { background: #f0f0f0; }
+  .rec-table th:first-child, .rec-table td:first-child { width: 180px; }
+  .rec-footer { border-top: 1px solid #b4b4b4; margin-top: 1rem; padding-top: .5rem; text-align: center; font-style: italic; font-size: .85rem; color: #787878; }
 </style>
 </head>
 <body>
@@ -66,7 +83,7 @@
 
   <div id="labDetailsBox">
     <label>Hemoglobin</label>
-    <input type="number" step="any" id="hemoglobinInput" min="0"> x10<sup>9</sup> g/L
+    <input type="number" step="any" id="hemoglobinInput" min="0"> g/dL
     &ensp;
     <label>Platelet Count</label>
     <input type="number" step="any" id="plateletInput" min="0"> x10<sup>9</sup>/L
@@ -93,8 +110,7 @@
 </form>
 
 <div class="output-box" id="outputBox" style="display:none;">
-  <h3>Dosing Recommendation</h3>
-  <pre id="resultText"></pre>
+  <div id="resultView"></div>
   <button type="button" id="downloadPdfBtn" style="margin-top: 1rem;">⬇ Download as PDF</button>
 </div>
 
@@ -105,7 +121,9 @@
   <p id="feedback-status"></p>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/fhirclient@2/build/fhir-client.js"></script>
 <script src="calculate.js"></script>
 <script src="app.js"></script>
+<script src="smart.js"></script>
 </body>
 </html>
