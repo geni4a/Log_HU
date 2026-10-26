@@ -1,6 +1,86 @@
-//   Page wiring
+/* ---------------------------------------------------------------
+   Page wiring
+   --------------------------------------------------------------- */
 let lastRecommendation = "";
 let lastPdfData = {};
+
+/* ---------------------------------------------------------------
+   Reading the recommendation text. Used by BOTH the on-screen report
+   and the PDF, so the two always match.
+   --------------------------------------------------------------- */
+function parseSchedule(text) {
+    const rows = [];
+    for (const line of text.split("\n")) {
+        const trimmed = line.trim();
+        for (const day of DAYS) {
+            if (trimmed.startsWith(day + ":")) rows.push([day, trimmed.slice(day.length + 1).trim()]);
+        }
+    }
+    return rows;
+}
+function parseBlocks(text) {
+    const idx = text.indexOf("Escalation");
+    if (idx === -1) return { current: text, escalation: null };
+    return { current: text.slice(0, idx).trim(), escalation: text.slice(idx).trim() };
+}
+// The dose lines that come before "Weekly schedule:" in a block.
+function headerLines(block) {
+    const lines = [];
+    for (const line of block.split("\n")) {
+        if (line.trim().startsWith("Weekly schedule")) break;
+        if (line.trim()) lines.push(line.trim());
+    }
+    return lines;
+}
+
+/* ---------------------------------------------------------------
+   On-screen report: same structure as the PDF
+   --------------------------------------------------------------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function tableHtml(head, rows) {
+    return '<table class="rec-table"><thead><tr>' + head.map(h => `<th>${esc(h)}</th>`).join('') +
+        '</tr></thead><tbody>' + rows.map(r => '<tr>' + r.map(c => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') +
+        '</tbody></table>';
+}
+
+function scheduleSection(title, block) {
+    const rows = parseSchedule(block);
+    const lines = headerLines(block);
+    return `<h4>${title}</h4><p class="rec-sub">${lines.map(esc).join('<br>')}</p>` +
+        tableHtml(['Day', 'Dose'], rows.length ? rows : [['\u2014', lines[0] || '']]);
+}
+
+function renderResult(rec, d) {
+    const view = document.getElementById('resultView');
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+
+    // Messages with no dose (for example "Laboratory Toxicity detected...") are shown as plain text.
+    if (!/Recommended dose/.test(rec)) {
+        view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p></div>';
+        pdfBtn.style.display = 'none';
+        return;
+    }
+    pdfBtn.style.display = '';
+
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const { current, escalation } = parseBlocks(rec);
+    view.innerHTML =
+        '<div class="rec-report">' +
+        '<h3>Hydroxyurea Initial Dosing Recommendation</h3>' +
+        `<p class="rec-date">Generated: ${date}</p><hr>` +
+        '<h4>Prescription Summary</h4>' +
+        tableHtml(['Parameter', 'Value'], [
+            ['Patient Weight', d.weight + ' kg'],
+            ['Formulation', d.med_type.replace('_', ' mg ')],
+            ['Starting Dose', d.dosing + ' mg/kg/day'],
+            ['Capsule Strength', d.type_amt + ' mg'],
+        ]) +
+        scheduleSection('Current Dosing Schedule', current) +
+        (escalation ? scheduleSection('Escalation Schedule', escalation) : '') +
+        '<p class="rec-footer">Clinical decision support tool only. Always confirm with a qualified clinician.</p>' +
+        '</div>';
+}
 
 document.querySelectorAll('input[name="labs"]').forEach(radio => {
     radio.addEventListener('change', () => {
@@ -36,7 +116,7 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
     lastRecommendation = recommendation;
     lastPdfData = { weight, med_type: medTypeRaw, dosing, type_amt: typeAmt };
 
-    document.getElementById('resultText').textContent = recommendation;
+    renderResult(recommendation, lastPdfData);
     document.getElementById('outputBox').style.display = 'block';
     document.getElementById('feedbackBox').style.display = 'block';
 
@@ -96,21 +176,6 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
     });
     y = doc.lastAutoTable.finalY + 24;
 
-    function parseSchedule(text) {
-        const rows = [];
-        for (const line of text.split("\n")) {
-            const trimmed = line.trim();
-            for (const day of DAYS) {
-                if (trimmed.startsWith(day + ":")) rows.push([day, trimmed.slice(day.length + 1).trim()]);
-            }
-        }
-        return rows;
-    }
-    function parseBlocks(text) {
-        const idx = text.indexOf("Escalation");
-        if (idx === -1) return { current: text, escalation: null };
-        return { current: text.slice(0, idx).trim(), escalation: text.slice(idx).trim() };
-    }
 
     const { current, escalation } = parseBlocks(lastRecommendation);
     const currentRows = parseSchedule(current);
@@ -183,14 +248,24 @@ document.getElementById('submitFeedbackBtn').addEventListener('click', async fun
     const status = document.getElementById('feedback-status');
     const feedbackText = document.getElementById('feedback-text').value;
 
-    const payload = {
-        weight: lastPdfData.weight,
-        med_type: lastPdfData.med_type,
-        dosing: lastPdfData.dosing,
-        type_amt: lastPdfData.type_amt,
-        recommendation: lastRecommendation,
-        feedback_text: feedbackText,
-    };
+    // When launched from an EHR (SMART on FHIR), the form holds real patient data.
+    // Send only the free-text feedback and the non-patient settings, never the
+    // weight or the recommendation derived from it.
+    const payload = window.SMART_ACTIVE
+        ? {
+            med_type: lastPdfData.med_type,
+            dosing: lastPdfData.dosing,
+            type_amt: lastPdfData.type_amt,
+            feedback_text: feedbackText,
+        }
+        : {
+            weight: lastPdfData.weight,
+            med_type: lastPdfData.med_type,
+            dosing: lastPdfData.dosing,
+            type_amt: lastPdfData.type_amt,
+            recommendation: lastRecommendation,
+            feedback_text: feedbackText,
+        };
 
     if (!FEEDBACK_ENDPOINT) {
         console.log("Feedback (no endpoint configured yet):", payload);
