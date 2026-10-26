@@ -50,7 +50,7 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     const currentMg = (capsDown * typeAmt) / 7;
     const lines = [
         `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
-        `  → ${capsDown} capsules/week (${currentMg.toFixed(2)} mg/day average)\n`,
+        `  → ${capsDown} capsules/week (${Math.round(currentMg)} mg/day average)\n`,
         `Weekly schedule:\n${currentSchedule}`,
     ];
     if (capsUp !== capsDown) {
@@ -59,7 +59,7 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
         const nextSchedule = formatScheduleBlock(capsUp);
         lines.push(
             `\nEscalation (when weight reaches ${newWeight.toFixed(2)} kg):`,
-            `  → ${capsUp} capsules/week (${newDoseMg.toFixed(2)} mg/day average)\n`,
+            `  → ${capsUp} capsules/week (${Math.round(newDoseMg)} mg/day average)\n`,
             `Weekly schedule:\n${nextSchedule}`
         );
     }
@@ -90,7 +90,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
     const dosePerWeek = dosePerDay * 7;
     let note = "";
     if (rawDose > MAX_DAILY_DOSE) {
-        note = `Note: Weight-based dose (${rawDose.toFixed(1)} mg/day) exceeds the ${MAX_DAILY_DOSE} mg/day maximum. Capping at ${MAX_DAILY_DOSE} mg/day.\n\n`;
+        note = `Note: Weight-based dose (${Math.round(rawDose)} mg/day) exceeds the ${MAX_DAILY_DOSE} mg/day maximum. Capping at ${MAX_DAILY_DOSE} mg/day.\n\n`;
     }
     if (medType === "capsule") return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
     if (medType === "liquid") {
