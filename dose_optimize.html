@@ -4,16 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hydroxyurea Dose Optimization Calculator</title>
-<!-- <style>
-  body { font-family: Arial, Helvetica, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #222; }
-  label { font-weight: bold; }
-  select, input[type="number"] { padding: 0.35rem; margin: 0.25rem 0; }
-  .required-asterisk { color: #c0392b; }
-  button { padding: 0.5rem 1rem; cursor: pointer; }
-  .navbar { margin-bottom: 0.5rem; }
-  .navbar button { margin-right: 0.5rem; }
-  .output-box { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
-</style> -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -28,8 +18,12 @@
 <h3>Enter Participant's Information</h3>
 
 <form id="optimizeForm">
+  <!-- <p>
+    <label>What is the patient's current weight in kg? * <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="weight" min="0" required>
+  </p> -->
   <p>
-    <label>Weight (kg) <span class="required-asterisk">*</span></label>
+    <label>What is the patient's current weight in kg? <span class="required-asterisk">*</span></label><br>
     <input type="number" step="any" id="weight" min="0" required>
   </p>
 
