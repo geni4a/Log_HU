@@ -72,7 +72,7 @@ function renderResult(rec, d) {
         '<h4>Prescription Summary</h4>' +
         tableHtml(['Parameter', 'Value'], [
             ['Patient Weight', d.weight + ' kg'],
-            ['Formulation', d.med_type.replace('_', ' mg ')],
+            // ['Formulation', d.med_type.replace('_', ' mg ')],
             ['Starting Dose', d.dosing + ' mg/kg/day'],
             ['Capsule Strength', d.type_amt + ' mg'],
         ]) +
@@ -169,7 +169,7 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
         head: [["Parameter", "Value"]],
         body: [
             ["Patient Weight", lastPdfData.weight + " kg"],
-            ["Formulation", lastPdfData.med_type.replace("_", " mg ")],
+            // ["Formulation", lastPdfData.med_type.replace("_", " mg ")],
             ["Starting Dose", lastPdfData.dosing + " mg/kg/day"],
             ["Capsule Strength", lastPdfData.type_amt + " mg"],
         ],
