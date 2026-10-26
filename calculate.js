@@ -42,14 +42,14 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     if (dosePerDay % typeAmt === 0) {
         const caps = Math.floor(dosePerDay / typeAmt);
         const schedule = buildSchedule(caps, 0);
-        return `${note}Recommended dose: ${dosePerDay.toFixed(2)} mg/day (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
+        return `${note}Recommended dose: ${Math.round(dosePerDay)} mg/day (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
     }
     const capsDown = Math.floor(dosePerWeek / typeAmt);
     const capsUp = Math.ceil(dosePerWeek / typeAmt);
     const currentSchedule = formatScheduleBlock(capsDown);
     const currentMg = (capsDown * typeAmt) / 7;
     const lines = [
-        `Recommended dose: ~${dosePerDay.toFixed(2)} mg/day`,
+        `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
         `  → ${capsDown} capsules/week (${currentMg.toFixed(2)} mg/day average)\n`,
         `Weekly schedule:\n${currentSchedule}`,
     ];
