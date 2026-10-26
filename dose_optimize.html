@@ -41,24 +41,13 @@
   </p>
 
   <p>
-    <label>Has the patient missed multiple doses in the previous month? <span class="required-asterisk">*</span></label>
+    <label>Do you have concerns that the patient may have poor adherence? <span class="required-asterisk">*</span></label>
     &emsp;
-    <input type="radio" id="missed_yes" name="missed" value="true" required> <label for="missed_yes">Yes</label>
+    <input type="radio" id="adh_low" name="adherence" value="true" required> <label for="esc_yes">Yes</label>
     &emsp;
-    <input type="radio" id="missed_no" name="missed" value="false" required> <label for="missed_no">No</label>
+    <input type="radio" id="adh_hi" name="adherence" value="false" required> <label for="esc_no">No</label>
   </p>
 
-  <p>
-    <label>How would you assess medication adherence? <span class="required-asterisk">*</span></label>
-    <select id="adherence" required>
-      <option value="" disabled selected>Rating</option>
-      <option value="1">1 - Poor</option>
-      <option value="2">2 - Fair</option>
-      <option value="3">3 - Good</option>
-      <option value="4">4 - Very Good</option>
-      <option value="5">5 - Excellent</option>
-    </select>
-  </p>
 
   <p>
     <label>Has the patient had a dose escalation in the past 3 months? <span class="required-asterisk">*</span></label>
@@ -75,7 +64,7 @@
     &emsp;
     <input type="radio" id="red_no" name="reduction" value="false" required> <label for="red_no">No</label>
   </p>
-
+   
 
 
   <h3>Lab Values</h3>
