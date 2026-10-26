@@ -95,7 +95,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
     if (medType === "capsule") return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
     if (medType === "liquid") {
         const mlPerDay = dosePerDay / typeAmt;
-        return `Recommended dose: ${Math.round(dosePerDay)} mg/day (${mlPerDay.toFixed(2)} mL/day)`;
+        return `Recommended dose: ${Math.round(dosePerDay)} mg/day (${mlPerDay.toFixed(1)} mL/day)`;
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);
