@@ -1,4 +1,6 @@
-   // Ported dosing logic (same as calculate.py / public/calculate.js)
+/* ---------------------------------------------------------------
+   Ported dosing logic (same as calculate.py / public/calculate.js)
+   --------------------------------------------------------------- */
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function pythonRound(x) {
@@ -94,15 +96,17 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
     }
     if (medType === "capsule") return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
     if (medType === "liquid") {
-        const mlPerDay = dosePerDay / typeAmt;
-        return `Recommended dose: ${Math.round(dosePerDay)} mg/day (${mlPerDay.toFixed(1)} mL/day)`;
+        // 0.1 mL is the finest practical measure, so round the volume first,
+        // then show the mg that volume actually delivers.
+        const mlPerDay = Math.round(dosePerDay / typeAmt * 10) / 10;
+        return `Recommended dose: ${Math.round(mlPerDay * typeAmt)} mg/day (${mlPerDay.toFixed(1)} mL/day)`;
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);
         const capsUp = Math.ceil(dosePerWeek / 250);
         const currentSchedule = formatScheduleBlock(capsDown);
         const lines = [
-            `Recommended dose: ~${dosePerDay.toFixed(1)} mg/day`,
+            `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
             `  → ${capsDown} scored tablet block(s)/week\n`,
             `Weekly schedule:\n${currentSchedule}`,
         ];
