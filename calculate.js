@@ -1,6 +1,4 @@
-/* ---------------------------------------------------------------
-   Ported dosing logic (same as calculate.py / public/calculate.js)
-   --------------------------------------------------------------- */
+/* Ported dosing logic (same as calculate.py / public/calculate.js) */
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function pythonRound(x) {
@@ -82,7 +80,7 @@ function calculateToxicity(labs) {
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
     const reasons = toxicityReasons(labs);
-    if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended: " + reasons.join("; ") + ".";
+    if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended because \n" + reasons.join("; ") + ".";
 
     // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
     return "Dose is optimized, do not change";
