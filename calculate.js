@@ -68,11 +68,23 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     return lines.join("\n");
 }
 
+function toxicityReasons(labs) {
+    const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
+    const reasons = [];
+    if (n < 0.75) reasons.push(`neutrophils ${n} x10^9/L (<0.75)`);
+    if (p < 80) reasons.push(`platelets ${p} x10^9/L (<80)`);
+    if (r < 50 && hb < 7) reasons.push(`reticulocytes ${r} x10^9/L (<50) with hemoglobin ${hb} g/dL (<7)`);
+    return reasons;
+}
+
 function calculateToxicity(labs) {
     const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
-    if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
+       const reasons = toxicityReasons(labs);
+    if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended: " + reasons.join("; ") + ".";
+
+    // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
     return "Dose is optimized, do not change";
 }
 
