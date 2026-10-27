@@ -24,8 +24,7 @@
   </p>
 
   <h3>Hydroxyurea Info</h3>
-  <!-- <div class="my-box"> -->
-  <div class="lab-subbox">
+  <!-- <div class="lab-subbox">
 
 
    <p>
@@ -50,7 +49,7 @@
       <option value="capsule_400">400 mg Capsule</option>
     </select>
     </p>
-  </p>
+  </p> -->
   <!-- <p>
     <label>Current Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
     <input type="number" step="any" id="dose" min="0" required>
@@ -62,7 +61,33 @@
       <option value="capsule">Capsule</option>
     </select>
   </p> -->
+  <!-- </div> -->
+  <div class="lab-subbox">
+  <div class="lab-row">
+    <label>Current Daily Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="dose" min="0" required>
   </div>
+
+  <div class="lab-or">OR</div>
+
+  <div class="lab-row">
+    <label>How many capsules per week?</label>
+    <input type="number" step="any" id="caps_dose" min="0">
+  </div>
+
+  <div class="lab-row">
+    <label>Formulation</label>
+    <select id="medType">
+      <option value="" disabled selected>Formulation</option>
+      <option value="capsule_500">500 mg Capsule</option>
+      <option value="Siklos_1000">Siklos (eq 1000 mg dissolvable and scoreable tablets)</option>
+      <option value="capsule_100">100 mg Capsule</option>
+      <option value="capsule_200">200 mg Capsule</option>
+      <option value="capsule_300">300 mg Capsule</option>
+      <option value="capsule_400">400 mg Capsule</option>
+    </select>
+  </div>
+</div>
 
   <p>
     <label>Do you have concerns that the patient may have poor adherence? <span class="required-asterisk">*</span></label>
