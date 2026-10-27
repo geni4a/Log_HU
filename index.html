@@ -56,7 +56,7 @@
     <input type="radio" id="labs_no" name="labs" value="false" required> <label for="labs_no">No</label>
   </p>
 
-  <div id="labDetailsBox">
+  <!-- <div id="labDetailsBox">
      <p>
     <label>Hemoglobin</label>
     <input type="number" step="any" id="hemoglobinInput" min="0"> g/dL
@@ -91,8 +91,42 @@
     <input type="number" step="any" id="reticulocytePercentInput" min="0">%
        </p>
       </div>
+  </div> -->
+<div id="labDetailsBox">
+  <div class="lab-row">
+    <label>Hemoglobin</label>
+    <input type="number" step="any" id="hemoglobinInput" min="0"> g/dL
   </div>
 
+  <div class="lab-row">
+    <label>Platelet Count</label>
+    <input type="number" step="any" id="plateletInput" min="0"> x10<sup>9</sup>/L
+  </div>
+
+  <div class="lab-row">
+    <label>Absolute Neutrophil Count <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="neutrophilInput" min="0"> x10<sup>9</sup>/L
+  </div>
+
+  <div class="lab-subbox">
+    <div class="lab-row">
+      <label>Absolute Reticulocyte Count</label>
+      <input type="number" step="any" id="reticulocyteInput" min="0"> x10<sup>9</sup>/L
+    </div>
+
+    <div class="lab-or">OR</div>
+
+    <div class="lab-row">
+      <label>RBC Count</label>
+      <input type="number" step="any" id="rbcInput" min="0"> x10<sup>9</sup>/L
+    </div>
+
+    <div class="lab-row">
+      <label>Reticulocyte percentage</label>
+      <input type="number" step="any" id="reticulocytePercentInput" min="0"> %
+    </div>
+  </div>
+</div>
  
   <p><button type="submit">Submit</button></p>
 </form>
