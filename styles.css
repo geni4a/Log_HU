@@ -4,6 +4,9 @@ label { font-weight: bold; }
 select, input[type="number"] { padding: 0.35rem; margin: 0.25rem 0; }
 .required-asterisk { color: #c0392b; }
 #labDetailsBox { display: none; margin: 0.75rem 0; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; }
+.lab-row { margin: 0.5rem 0; }
+.lab-subbox { margin-top: 0.75rem; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
+.lab-or { margin: 0.25rem 0; font-weight: bold; color: #555; }
 button { padding: 0.5rem 1rem; cursor: pointer; }
 .output-box, .feedback-box { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
 pre { white-space: pre-wrap; font-family: inherit; margin: 0; }
