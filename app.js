@@ -267,3 +267,22 @@ function notifyParentOfResize() {
 }
 window.addEventListener('load', notifyParentOfResize);
 document.querySelectorAll('input[name="labs"]').forEach(r => r.addEventListener('change', () => setTimeout(notifyParentOfResize, 50)));
+
+
+
+function updateArcFromRbc() {
+    const rbc = parseFloat(document.getElementById('rbcInput').value);
+    const pct = parseFloat(document.getElementById('reticulocytePercentInput').value);
+    if (!isNaN(rbc) && !isNaN(pct)) {
+        document.getElementById('reticulocyteInput').value = Math.round(pct / 100 * rbc * 10) / 10;
+    }
+}
+['rbcInput', 'reticulocytePercentInput'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', updateArcFromRbc);
+});
+
+// If someone types the ARC directly, clear the two it would be derived from.
+document.getElementById('reticulocyteInput').addEventListener('input', function () {
+    document.getElementById('rbcInput').value = '';
+    document.getElementById('reticulocytePercentInput').value = '';
+});
