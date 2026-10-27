@@ -80,7 +80,7 @@ function calculateToxicity(labs) {
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
     const reasons = toxicityReasons(labs);
-    if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended because \n" + reasons.join("; ") + ".";
+    if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended because \n" + reasons.join("; ") + ". Please refer to the toxicity criteria in the About Page";
 
     // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
     return "Dose is optimized, do not change";
