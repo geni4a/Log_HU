@@ -66,13 +66,29 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     return lines.join("\n");
 }
 
+// function toxicityReasons(labs) {
+//     const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
+//     const reasons = [];
+//     if (n < 0.75) reasons.push(`neutrophils ${n} x10^9/L (<0.75)`);
+//     if (p < 80) reasons.push(`platelets ${p} x10^9/L (<80)`);
+//     if (r < 50 && hb < 7) reasons.push(`reticulocytes ${r} x10^9/L (<50) with hemoglobin ${hb} g/dL (<7)`);
+//     return reasons;
+// }
 function toxicityReasons(labs) {
     const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
     const reasons = [];
-    if (n < 0.75) reasons.push(`neutrophils ${n} x10^9/L (<0.75)`);
-    if (p < 80) reasons.push(`platelets ${p} x10^9/L (<80)`);
-    if (r < 50 && hb < 7) reasons.push(`reticulocytes ${r} x10^9/L (<50) with hemoglobin ${hb} g/dL (<7)`);
+    if (n < 0.75) reasons.push(`Absolute neutrophil count ${n} ×10⁹/L is below 0.75 ×10⁹/L`);
+    if (p < 80) reasons.push(`Platelet count ${p} ×10⁹/L is below 80 ×10⁹/L`);
+    if (r < 50 && hb < 7) reasons.push(`Absolute reticulocyte count ${r} ×10⁹/L is below 50 ×10⁹/L with Hemoglobin ${hb} g/dL below 7 g/dL`);
     return reasons;
+}
+
+
+function formatToxicityMessage(reasons) {
+    return "Laboratory Toxicity detected - dose hold/reduction recommended.\n\n" +
+        (reasons.length > 1 ? "Reasons:" : "Reason:") + "\n" +
+        reasons.map(r => "• " + r).join("\n") + "\n\n" +
+        "Please refer to the toxicity criteria on the About page.";
 }
 
 function calculateToxicity(labs) {
@@ -80,8 +96,8 @@ function calculateToxicity(labs) {
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
     const reasons = toxicityReasons(labs);
-    if (reasons.length ) return "Laboratory Toxicity - dose hold/reduction recommended because \n" + reasons.join("; ") + ". Please refer to the toxicity criteria in the About Page";
-
+    // if (reasons.length ) return "Laboratory Toxicity Detected- dose hold/reduction recommended because \n" + reasons.join("; ") + ". Please refer to the toxicity criteria in the About Page";
+    if (reasons.length) return formatToxicityMessage(reasons);
     // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
     return "Dose is optimized, do not change";
 }
