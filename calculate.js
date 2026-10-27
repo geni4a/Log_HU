@@ -80,19 +80,19 @@ function calculateToxicity(labs) {
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
     const reasons = toxicityReasons(labs);
-    if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended because \n" + reasons.join("; ") + ". Please refer to the toxicity criteria in the About Page";
+    if (reasons.length ) return "Laboratory Toxicity - dose hold/reduction recommended because \n" + reasons.join("; ") + ". Please refer to the toxicity criteria in the About Page";
 
     // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
     return "Dose is optimized, do not change";
 }
 
-function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = false, labs = null) {
+function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = false, labs = null, override = false) {
     if (labsTrue) {
         if (labs.reticulocyte === 0 && labs.reticulocyte_percent && labs.rbc) {
             labs.reticulocyte = labs.reticulocyte_percent * labs.rbc;
         }
         const tox = calculateToxicity(labs);
-        if (tox.includes("Laboratory Toxicity")) {
+        if (tox.includes("Laboratory Toxicity") && !override) {
             // return "Laboratory Toxicity detected. Please review the patient's labs before calculating the initiating hydroxyurea dose.";
            return tox;
         }
