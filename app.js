@@ -1,13 +1,11 @@
-/* ---------------------------------------------------------------
-   Page wiring
-   --------------------------------------------------------------- */
+/* Page wiring */
 let lastRecommendation = "";
 let lastPdfData = {};
 
-/* ---------------------------------------------------------------
+/* 
    Reading the recommendation text. Used by BOTH the on-screen report
    and the PDF, so the two always match.
-   --------------------------------------------------------------- */
+   */
 function parseSchedule(text) {
     const rows = [];
     for (const line of text.split("\n")) {
@@ -33,9 +31,9 @@ function headerLines(block) {
     return lines;
 }
 
-/* ---------------------------------------------------------------
+/*
    On-screen report: same structure as the PDF
-   --------------------------------------------------------------- */
+   */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function tableHtml(head, rows) {
@@ -56,9 +54,19 @@ function renderResult(rec, d) {
     const pdfBtn = document.getElementById('downloadPdfBtn');
 
     // Messages with no dose (for example "Laboratory Toxicity detected...") are shown as plain text.
-    if (!/Recommended dose/.test(rec)) {
-        view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p></div>';
+    // if (!/Recommended dose/.test(rec)) {
+    //     view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p></div>';
+    //     pdfBtn.style.display = 'none';
+    //     return;
+    // }
+   if (!/Recommended dose/.test(rec)) {
+        const isToxicity = rec.startsWith("Laboratory Toxicity detected");
+        view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p>' +
+            (isToxicity ? '<p><button type="button" id="overrideBtn">I understand, proceed with dosing recommendations</button></p>' : '') +
+            '</div>';
         pdfBtn.style.display = 'none';
+        const overrideBtn = document.getElementById('overrideBtn');
+        if (overrideBtn) overrideBtn.addEventListener('click', proceedDespiteToxicity);
         return;
     }
     pdfBtn.style.display = '';
