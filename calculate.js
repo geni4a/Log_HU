@@ -81,7 +81,7 @@ function calculateToxicity(labs) {
     const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
-       const reasons = toxicityReasons(labs);
+    const reasons = toxicityReasons(labs);
     if (reasons.length) return "Laboratory Toxicity - dose hold/reduction recommended: " + reasons.join("; ") + ".";
 
     // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
