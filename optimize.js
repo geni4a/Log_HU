@@ -60,3 +60,21 @@ function notifyParentOfResize() {
     }
 }
 window.addEventListener('load', notifyParentOfResize);
+
+function updateDoseFromCapsules() {
+    const caps = parseFloat(document.getElementById('caps_dose').value);
+    const strength = parseFloat(document.getElementById('medType').value.split('_')[1]); // "capsule_500" -> 500
+    if (!isNaN(caps) && !isNaN(strength)) {
+        document.getElementById('dose').value = Math.round(caps * strength / 7);
+    }
+}
+['caps_dose', 'medType'].forEach(function (id) {
+    const el = document.getElementById(id);
+    el.addEventListener('input', updateDoseFromCapsules);
+    el.addEventListener('change', updateDoseFromCapsules);
+});
+
+// If someone types a dose directly, clear the capsule count so the two never disagree.
+document.getElementById('dose').addEventListener('input', function () {
+    document.getElementById('caps_dose').value = '';
+});
