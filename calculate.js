@@ -89,7 +89,7 @@ function calculateToxicity(labs) {
 function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = false, labs = null, override = false) {
     if (labsTrue) {
         if (labs.reticulocyte === 0 && labs.reticulocyte_percent && labs.rbc) {
-            labs.reticulocyte = labs.reticulocyte_percent * labs.rbc;
+            labs.reticulocyte = labs.reticulocyte_percent / 100 * labs.rbc;
         }
         const tox = calculateToxicity(labs);
         if (tox.includes("Laboratory Toxicity") && !override) {
