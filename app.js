@@ -2,6 +2,18 @@
 let lastRecommendation = "";
 let lastPdfData = {};
 
+
+let lastArgs = null;
+
+function proceedDespiteToxicity() {
+    const a = lastArgs;
+    lastRecommendation = calculateInitialDosing(a.weight, a.medType, a.dosing, a.typeAmt, a.labsTrue, a.labs, true);
+    renderResult(lastRecommendation, lastPdfData);
+    document.getElementById('resultView').insertAdjacentHTML('afterbegin',
+        '<p class="rec-message"><em>Laboratory toxicity was flagged. Dosing is shown after clinician review.</em></p>');
+    document.getElementById('downloadPdfBtn').style.display = '';
+    notifyParentOfResize();
+}
 /* 
    Reading the recommendation text. Used by BOTH the on-screen report
    and the PDF, so the two always match.
@@ -119,6 +131,8 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
         };
     }
 
+    // const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);
+   lastArgs = { weight, medType, dosing, typeAmt, labsTrue, labs };
     const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);
 
     lastRecommendation = recommendation;
@@ -131,7 +145,8 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
     notifyParentOfResize();
 });
 
-/* ---- PDF download (same jsPDF logic as the original app) ---- */
+
+/*  PDF download (same jsPDF logic as the original app)  */
 document.getElementById('downloadPdfBtn').addEventListener('click', function () {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
@@ -243,58 +258,8 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
     doc.save("HU_dosing_" + lastPdfData.weight + "kg_" + dateStr.replace(/ /g, "_") + ".pdf");
 });
 
-/* ---- Feedback submission -------------------------------------
-   TODO: point this at a real endpoint before relying on it.
-   Easiest options: a Formspree endpoint (formspree.io), or a
-   Google Apps Script Web App URL that appends to a Sheet.
-   Until FEEDBACK_ENDPOINT is set, this just logs to the console
-   so the button doesn't silently fail on you.
------------------------------------------------------------------- */
-const FEEDBACK_ENDPOINT = ""; // e.g. "https://formspree.io/f/xxxxxxx"
-
-document.getElementById('submitFeedbackBtn').addEventListener('click', async function () {
-    const status = document.getElementById('feedback-status');
-    const feedbackText = document.getElementById('feedback-text').value;
-
-    // When launched from an EHR (SMART on FHIR), the form holds real patient data.
-    // Send only the free-text feedback and the non-patient settings, never the
-    // weight or the recommendation derived from it.
-    const payload = window.SMART_ACTIVE
-        ? {
-            med_type: lastPdfData.med_type,
-            dosing: lastPdfData.dosing,
-            type_amt: lastPdfData.type_amt,
-            feedback_text: feedbackText,
-        }
-        : {
-            weight: lastPdfData.weight,
-            med_type: lastPdfData.med_type,
-            dosing: lastPdfData.dosing,
-            type_amt: lastPdfData.type_amt,
-            recommendation: lastRecommendation,
-            feedback_text: feedbackText,
-        };
-
-    if (!FEEDBACK_ENDPOINT) {
-        console.log("Feedback (no endpoint configured yet):", payload);
-        status.textContent = "Feedback endpoint not set up yet — logged locally for now.";
-        return;
-    }
-
-    status.textContent = "Submitting...";
-    try {
-        const res = await fetch(FEEDBACK_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        status.textContent = res.ok ? "Thanks for your feedback!" : "Something went wrong.";
-    } catch (err) {
-        status.textContent = "Something went wrong.";
-    }
-});
-
-/* ---- Let the parent (Wix) know our height, for iframe resizing ---- */
+// 
+/*  Let the parent (Wix) know our height, for iframe resizing  */
 function notifyParentOfResize() {
     if (window.parent !== window) {
         window.parent.postMessage({ type: "hu-calculator-resize", height: document.body.scrollHeight }, "*");
