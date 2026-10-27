@@ -18,17 +18,32 @@
 <h3>Enter Participant's Information</h3>
 
 <form id="optimizeForm">
-  <!-- <p>
-    <label>What is the patient's current weight in kg? * <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="weight" min="0" required>
-  </p> -->
   <p>
     <label>What is the patient's current weight in kg? <span class="required-asterisk">*</span></label><br>
     <input type="number" step="any" id="weight" min="0" required>
   </p>
 
   <h3>Hydroxyurea Info</h3>
-  <p>
+  <div id=labDetailsBox>
+
+   <p>
+    <label>Current Daily Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="dose" min="0" required>
+    &emsp;
+  </p>
+       OR &ensp;
+      <p>
+    <label>How many capsules per week? <span class="required-asterisk">*</span></label>
+    <input type="number" step="any" id="caps_dose" min="0" required>
+    &emsp;
+    <label>Formulation <span class="required-asterisk">*</span></label>
+    <select id="medType" required>
+      <option value="" disabled selected>Formulation</option>
+      <option value="liquid">Liquid</option>
+      <option value="capsule">Capsule</option>
+    </select>
+  </p>
+  <!-- <p>
     <label>Current Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
     <input type="number" step="any" id="dose" min="0" required>
     &emsp;
@@ -38,7 +53,8 @@
       <option value="liquid">Liquid</option>
       <option value="capsule">Capsule</option>
     </select>
-  </p>
+  </p> -->
+  </div>
 
   <p>
     <label>Do you have concerns that the patient may have poor adherence? <span class="required-asterisk">*</span></label>
