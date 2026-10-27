@@ -37,3 +37,4 @@ table.guidelines th.blank { width: 14%; }
 table.guidelines th.rowhead { font-weight: bold; background: #fff; }
 table.guidelines td { font-weight: normal; }
 .note { font-size: 0.9rem; color: #555; }
+.rec-message, #resultText { white-space: pre-line; }
