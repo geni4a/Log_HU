@@ -72,7 +72,7 @@ function renderResult(rec, d) {
     //     return;
     // }
    if (!/Recommended dose/.test(rec)) {
-        const isToxicity = rec.startsWith("Laboratory Toxicity detected");
+        const isToxicity = rec.startsWith("Laboratory Toxicity");
         view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p>' +
             (isToxicity ? '<p><button type="button" id="overrideBtn">I understand, proceed with dosing recommendations</button></p>' : '') +
             '</div>';
@@ -132,7 +132,7 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
     }
 
     // const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);
-   lastArgs = { weight, medType, dosing, typeAmt, labsTrue, labs };
+    lastArgs = { weight, medType, dosing, typeAmt, labsTrue, labs };
     const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);
 
     lastRecommendation = recommendation;
