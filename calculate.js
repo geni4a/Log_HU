@@ -94,7 +94,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
             labs.reticulocyte = labs.reticulocyte_percent * labs.rbc;
         }
         const tox = calculateToxicity(labs);
-        if (tox.includes("Laboratory Toxicity") {
+        if (tox.includes("Laboratory Toxicity")) {
             // return "Laboratory Toxicity detected. Please review the patient's labs before calculating the initiating hydroxyurea dose.";
            return tox;
         }
