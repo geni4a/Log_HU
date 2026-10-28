@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dosing Tool{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="google_translate_element"></div>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<div class="navbar">
+  <a href="index.html"><button type="button">Initial Dosing Calculator</button></a>
+  <a href="dose_optimize.html"><button type="button">Dose Optimization Calculator</button></a>
+  <a href="about.html"><button type="button">About</button></a>
+</div>
+  </div>
+
+    <hr>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+</html>
