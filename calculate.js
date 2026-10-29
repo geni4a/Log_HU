@@ -72,8 +72,10 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     const currentSchedule = formatScheduleBlock(capsDown);
     const currentMg = (capsDown * typeAmt) / 7;
     const lines = [
-        `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
-        `  → ${capsDown} capsules/week (${Math.round(currentMg)} mg/day average)\n`,
+        // `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
+        // `  → ${capsDown} capsules/week (${Math.round(currentMg)} mg/day average)\n`,
+        // `Weekly schedule:\n${currentSchedule}`,
+         `Recommended Starting Dose: (${Math.round(currentMg)} mg once daily )\n`,
         `Weekly schedule:\n${currentSchedule}`,
     ];
     if (capsUp !== capsDown) {
@@ -149,7 +151,9 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         // 0.1 mL is the finest practical measure, so round the volume first,
         // then show the mg that volume actually delivers.
         const mlPerDay = Math.round(dosePerDay / typeAmt * 10) / 10;
-        return `Recommended dose: ${Math.round(mlPerDay * typeAmt)} mg/day (${mlPerDay.toFixed(1)} mL/day)`;
+        // return `Recommended dose: ${Math.round(mlPerDay * typeAmt)} mg/day (${mlPerDay.toFixed(1)} mL/day)`;
+        return `Recommended Starting Dose: ${Math.round(mlPerDay * typeAmt)} mg once daily (${mlPerDay.toFixed(1)} mL/day)`;
+
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);

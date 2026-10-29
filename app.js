@@ -93,10 +93,13 @@ function renderResult(rec, d) {
         tableHtml(['Parameter', 'Value'], [
             ['Patient Weight', d.weight + ' kg'],
             // ['Formulation', d.med_type.replace('_', ' mg ')],
-            ['Preferred Starting mg/kg dose', d.dosing + ' mg/kg/day'],
-            ['Hydroxyurea Formulation', d.type_amt + ' mg'],
+            ['Preferred Starting mg/kg dose', d.dosing + ' mg/kg per day'],
+            ['Hydroxyurea Formulation', d.type_amt + ' mg' + d.medType],
+            ['Laboratory Values Provided', d.labsTrue ? 'Yes' : 'No'],
+            ['Laboratory Toxicity Detected', rec.startsWith("Laboratory Toxicity") ? 'Yes' : 'No'],
+
         ]) +
-        scheduleSection('Current Dosing Schedule', current) +
+        scheduleSection('Recommended Starting Dose Schedule', current) +
         (escalation ? scheduleSection('Escalation Schedule', escalation) : '') +
         '<p class="rec-footer">Clinical decision support tool only. Always confirm with a qualified clinician.</p>' +
         '</div>';
