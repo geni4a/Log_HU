@@ -120,15 +120,35 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
     const labsTrue = document.querySelector('input[name="labs"]:checked').value === 'true';
 
     let labs = null;
-    if (labsTrue) {
-        labs = {
-            hemoglobin: parseFloat(document.getElementById('hemoglobinInput').value) || 0,
-            reticulocyte: parseFloat(document.getElementById('reticulocyteInput').value) || 0,
-            rbc: parseFloat(document.getElementById('rbcInput').value) || 0,
-            platelet: parseFloat(document.getElementById('plateletInput').value) || 0,
-            reticulocyte_percent: parseFloat(document.getElementById('reticulocytePercentInput').value) || 0,
-            neutrophil: parseFloat(document.getElementById('neutrophilInput').value) || 0,
+    // if (labsTrue) {
+    //     labs = {
+    //         hemoglobin: parseFloat(document.getElementById('hemoglobinInput').value) || 0,
+    //         reticulocyte: parseFloat(document.getElementById('reticulocyteInput').value) || 0,
+    //         rbc: parseFloat(document.getElementById('rbcInput').value) || 0,
+    //         platelet: parseFloat(document.getElementById('plateletInput').value) || 0,
+    //         reticulocyte_percent: parseFloat(document.getElementById('reticulocytePercentInput').value) || 0,
+    //         neutrophil: parseFloat(document.getElementById('neutrophilInput').value) || 0,
+    //     };
+    // }
+        if (labsTrue) {
+        const raw = {
+            hemoglobin: parseFloat(document.getElementById('hemoglobinInput').value),
+            neutrophil: parseFloat(document.getElementById('neutrophilInput').value),
+            reticulocyte: parseFloat(document.getElementById('reticulocyteInput').value),
+            platelet: parseFloat(document.getElementById('plateletInput').value),
         };
+        // If the ARC will be worked out from RBC and reticulocyte %, check that value too
+        const rbc = parseFloat(document.getElementById('rbcInput').value);
+        const pct = parseFloat(document.getElementById('reticulocytePercentInput').value);
+        if (isNaN(raw.reticulocyte) && !isNaN(rbc) && !isNaN(pct)) raw.reticulocyte = pct / 100 * rbc;
+
+        const rangeMsg = labRangeMessage(raw);
+        if (rangeMsg) {
+            renderResult(rangeMsg, {});
+            document.getElementById('outputBox').style.display = 'block';
+            notifyParentOfResize();
+            return;
+        }
     }
 
     // const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);

@@ -1,4 +1,25 @@
 /* Ported dosing logic (same as calculate.py / public/calculate.js) */
+
+const LAB_RANGES = {
+    hemoglobin:   { label: "Hemoglobin",                  min: 2.0, max: 15.0, unit: "g/dL" },
+    neutrophil:   { label: "Absolute Neutrophil Count",   min: 0.1, max: 20,   unit: "x10^9/L" },
+    reticulocyte: { label: "Absolute Reticulocyte Count", min: 10,  max: 999,  unit: "x10^9/L" },
+    platelet:     { label: "Platelet Count",              min: 10,  max: 999,  unit: "x10^9/L" },
+};
+
+// Returns a message naming every out-of-range value, or null if all are fine.
+// Blank (NaN) values are skipped, because on the Initial Dosing page some labs are optional.
+function labRangeMessage(labs) {
+    const bad = [];
+    for (const key in LAB_RANGES) {
+        const v = labs[key], r = LAB_RANGES[key];
+        if (v === null || v === undefined || isNaN(v)) continue;
+        if (v < r.min || v > r.max) bad.push(`• ${r.label}: ${v} ${r.unit} (expected ${r.min} to ${r.max})`);
+    }
+    return bad.length
+        ? "Laboratory value entered is out of range. Check units and result for accuracy.\n\n" + bad.join("\n")
+        : null;
+}
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function pythonRound(x) {
