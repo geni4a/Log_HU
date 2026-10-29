@@ -95,8 +95,8 @@ function renderResult(rec, d) {
             // ['Formulation', d.med_type.replace('_', ' mg ')],
             ['Preferred Starting mg/kg dose', d.dosing + ' mg/kg per day'],
             ['Hydroxyurea Formulation', d.type_amt + ' mg' + d.medType],
-            ['Laboratory Values Provided', d.labsTrue ? 'Yes' : 'No'],
-            ['Laboratory Toxicity Detected', rec.startsWith("Laboratory Toxicity") ? 'Yes' : 'No'],
+            // ['Laboratory Values Provided', d.labsTrue ? 'Yes' : 'No'],
+            // ['Laboratory Toxicity Detected', rec.startsWith("Laboratory Toxicity") ? 'Yes' : 'No'],
 
         ]) +
         scheduleSection('Recommended Starting Dose Schedule', current) +
