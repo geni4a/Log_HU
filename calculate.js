@@ -63,7 +63,9 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     if (dosePerDay % typeAmt === 0) {
         const caps = Math.floor(dosePerDay / typeAmt);
         const schedule = buildSchedule(caps, 0);
-        return `${note}Recommended dose: ${Math.round(dosePerDay)} mg/day (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
+        // return `${note}Recommended dose: ${Math.round(dosePerDay)} mg/day (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
+        return `${note}Recommended Dose: (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
+
     }
     const capsDown = Math.floor(dosePerWeek / typeAmt);
     const capsUp = Math.ceil(dosePerWeek / typeAmt);

@@ -93,8 +93,8 @@ function renderResult(rec, d) {
         tableHtml(['Parameter', 'Value'], [
             ['Patient Weight', d.weight + ' kg'],
             // ['Formulation', d.med_type.replace('_', ' mg ')],
-            ['Starting Dose', d.dosing + ' mg/kg/day'],
-            ['Capsule Strength', d.type_amt + ' mg'],
+            ['Preferred Starting mg/kg dose', d.dosing + ' mg/kg/day'],
+            ['Hydroxyurea Formulation', d.type_amt + ' mg'],
         ]) +
         scheduleSection('Current Dosing Schedule', current) +
         (escalation ? scheduleSection('Escalation Schedule', escalation) : '') +
@@ -213,8 +213,8 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
         body: [
             ["Patient Weight", lastPdfData.weight + " kg"],
             // ["Formulation", lastPdfData.med_type.replace("_", " mg ")],
-            ["Starting Dose", lastPdfData.dosing + " mg/kg/day"],
-            ["Capsule Strength", lastPdfData.type_amt + " mg"],
+            ["Preferred Starting mg/kg dose", lastPdfData.dosing + " mg/kg/day"],
+            ["Hydroxyurea Formulation", lastPdfData.type_amt + " mg"],
         ],
     });
     y = doc.lastAutoTable.finalY + 24;
@@ -227,7 +227,7 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
-    doc.text("Current Dosing Schedule", margin, y);
+    doc.text("Recommended Starting Dose Schedule", margin, y);
     y += 16;
 
     doc.setFont("helvetica", "normal");
