@@ -136,15 +136,24 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         // 0.1 mL is the finest practical measure, so round the volume first,
         // then show the mg that volume actually delivers.
         const mlPerDay = Math.round(dosePerDay / typeAmt * 10) / 10;
-        return `${note}Recommended Starting Dose: ${Math.round(mlPerDay * typeAmt)} mg once daily (${mlPerDay.toFixed(1)} mL/day)`;
+        // const lines = [
+        //     `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
+        //     `  → ${capsDown} scored tablet block(s)/week\n`,
+        //     `Weekly schedule:\n${currentSchedule}`,
+        // ];
+        return `${note}Recommended Starting Dose: ${capsDown} per week (${Math.round(mlPerDay * typeAmt)} mg once daily) (${mlPerDay.toFixed(1)} mL/day)`;
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);
         const capsUp = Math.ceil(dosePerWeek / 250);
         const currentSchedule = formatScheduleBlock(capsDown);
-        const lines = [
-            `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
-            `  → ${capsDown} scored tablet block(s)/week\n`,
+        // const lines = [
+        //     `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
+        //     `  → ${capsDown} scored tablet block(s)/week\n`,
+        //     `Weekly schedule:\n${currentSchedule}`,
+        // ];
+            const lines = [
+            `${note}Recommended Starting Dose:  ${capsDown} scored tablet block(s)/week (~${Math.round(dosePerDay)} mg once daily)\n`,
             `Weekly schedule:\n${currentSchedule}`,
         ];
         if (capsUp !== capsDown) {
