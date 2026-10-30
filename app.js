@@ -142,11 +142,19 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
             neutrophil: parseFloat(document.getElementById('neutrophilInput').value),
         };
 
-        if (isNaN(labs.neutrophil)) {
-            renderResult("Please enter the Absolute Neutrophil Count.", {});
+             // Each check shows a message and stops
+        const stop = msg => {
+            renderResult(msg, {});
             document.getElementById('outputBox').style.display = 'block';
             notifyParentOfResize();
-            return;
+        };
+
+        if (isNaN(labs.hemoglobin)) return stop("Please enter the Hemoglobin level.");
+        if (isNaN(labs.platelet))   return stop("Please enter the Platelet Count.");
+
+        // ARC is needed, either typed directly or worked out from RBC and reticulocyte %
+        if (isNaN(labs.reticulocyte) && !(labs.reticulocyte_percent && labs.rbc)) {
+            return stop("Please enter either the Absolute Reticulocyte Count, or both the RBC Count and the Reticulocyte percentage.");
         }
 
         // Check the ARC that will actually be used, including one derived from RBC and %
