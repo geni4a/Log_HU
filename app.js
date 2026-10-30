@@ -15,35 +15,12 @@ function proceedDespiteToxicity() {
     notifyParentOfResize();
 }
 
-/*
-   Reading the recommendation text. Used by BOTH the on-screen report
-   and the PDF, so the two always match.
-*/
-function parseSchedule(text) {
-    const rows = [];
-    for (const line of text.split("\n")) {
-        const trimmed = line.trim();
-        for (const day of DAYS) {
-            if (trimmed.startsWith(day + ":")) rows.push([day, trimmed.slice(day.length + 1).trim()]);
-        }
-    }
-    return rows;
-}
+/* Splits the recommendation into current and escalation blocks (parseSchedule etc. are in render.js) */
 function parseBlocks(text) {
     const idx = text.indexOf("Escalation");
     if (idx === -1) return { current: text, escalation: null };
     return { current: text.slice(0, idx).trim(), escalation: text.slice(idx).trim() };
 }
-// The dose lines that come before "Weekly schedule:" in a block.
-function headerLines(block) {
-    const lines = [];
-    for (const line of block.split("\n")) {
-        if (line.trim().startsWith("Weekly schedule")) break;
-        if (line.trim()) lines.push(line.trim());
-    }
-    return lines;
-}
-
 // Readable formulation name for the report and the PDF
 function formulationLabel(raw) {
     const [kind, amt] = raw.split('_');
@@ -56,24 +33,6 @@ function formulationLabel(raw) {
 function toxicityStatus(d) {
     if (!d.labsTrue) return 'Not assessed';
     return d.toxicity ? 'Yes (dosing shown after clinician review)' : 'No';
-}
-
-/*
-   On-screen report: same structure as the PDF
-*/
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-function tableHtml(head, rows) {
-    return '<table class="rec-table"><thead><tr>' + head.map(h => `<th>${esc(h)}</th>`).join('') +
-        '</tr></thead><tbody>' + rows.map(r => '<tr>' + r.map(c => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') +
-        '</tbody></table>';
-}
-
-function scheduleSection(title, block) {
-    const rows = parseSchedule(block);
-    const lines = headerLines(block);
-    return `<h4>${title}</h4><p class="rec-sub">${lines.map(esc).join('<br>')}</p>` +
-        tableHtml(['Day', 'Dose'], rows.length ? rows : [['—', lines[0] || '']]);
 }
 
 function renderResult(rec, d) {
@@ -142,19 +101,11 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
             neutrophil: parseFloat(document.getElementById('neutrophilInput').value),
         };
 
-             // Each check shows a message and stops
-        const stop = msg => {
-            renderResult(msg, {});
+        if (isNaN(labs.neutrophil)) {
+            renderResult("Please enter the Absolute Neutrophil Count.", {});
             document.getElementById('outputBox').style.display = 'block';
             notifyParentOfResize();
-        };
-
-        if (isNaN(labs.hemoglobin)) return stop("Please enter the Hemoglobin level.");
-        if (isNaN(labs.platelet))   return stop("Please enter the Platelet Count.");
-
-        // ARC is needed, either typed directly or worked out from RBC and reticulocyte %
-        if (isNaN(labs.reticulocyte) && !(labs.reticulocyte_percent && labs.rbc)) {
-            return stop("Please enter either the Absolute Reticulocyte Count, or both the RBC Count and the Reticulocyte percentage.");
+            return;
         }
 
         // Check the ARC that will actually be used, including one derived from RBC and %

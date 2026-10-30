@@ -1,0 +1,178 @@
+# Hydroxyurea Dosing Calculator
+
+A small website with two calculators for hydroxyurea dosing in sickle cell disease, plus an About page:
+
+- **Initial Dosing Calculator** (`index.html`): weight-based starting dose, converted to capsules, Siklos tablets or liquid, with a weekly schedule and a PDF.
+- **Dose Optimization Calculator** (`dose_optimize.html`): for patients already on treatment. Checks labs, recent dose changes and maximum dose, and calculates an escalation dose and schedule when one is recommended.
+- **About** (`about.html`): explains the rules and the toxicity criteria table.
+
+> **Clinical decision support tool only.** It does not replace clinical judgment. Every recommendation must be confirmed by a qualified clinician. This repository has not been validated as a medical device.
+
+It is plain HTML and JavaScript with no build step and no server. Calculations run in the browser, and no patient data is sent anywhere by the calculators.
+
+---
+
+## Files
+
+| File | What it does |
+|---|---|
+| `index.html` | Initial Dosing page (form and result area). |
+| `dose_optimize.html` | Dose Optimization page. |
+| `about.html` | About page. Contains the criteria table. |
+| `styles.css` | Shared styles for all pages, including the result tables (`.rec-*`). |
+| `calculate.js` | **The dosing rules.** Lab ranges, toxicity criteria, capsule/Siklos/liquid dosing, weekly schedules. No page code. |
+| `render.js` | Turns recommendation text into the Day/Dose tables. Shared by both calculators. |
+| `app.js` | Page logic for Initial Dosing: reads the form, checks labs, shows the result, toxicity override button, PDF download, ARC auto-fill. |
+| `optimize.js` | Page logic for Dose Optimization: formulation/dose fields, lab checks, the decision order, escalation dose. |
+| `smart.js`, `launch.html`, `config.js` | Optional SMART on FHIR support (fill weight and labs from an EHR). See below. |
+
+### Script load order matters
+
+```html
+<script src="calculate.js"></script>   <!-- rules first -->
+<script src="render.js"></script>      <!-- table helpers -->
+<script src="app.js"></script>         <!-- optimize.js on the optimization page -->
+```
+
+`app.js` and `optimize.js` use functions defined in `calculate.js` and `render.js`, so those must load first. Do not load both `app.js` and `optimize.js` on the same page.
+
+---
+
+## How the pieces fit together
+
+1. The user submits the form. `app.js` (or `optimize.js`) reads the values.
+2. It calls functions in `calculate.js`, which return **text** (for example `Sunday: 2 capsules` lines, or a toxicity message).
+3. `render.js` reads the `Day: dose` lines out of that text and builds the tables. `app.js` and `optimize.js` put the result on the page.
+4. The PDF is built in the browser from the same text, so the screen and the PDF always agree.
+
+Because the tables are built by reading the text, **the wording in `calculate.js` and the checks in `app.js`/`optimize.js` must match**. For example, `app.js` decides "this result contains a dose" by looking for `Recommended Starting Dose:` in the text. If you change that wording, change the check too (`renderResult` in `app.js`). The same applies to the escalation block, which starts with `Escalation`, and the schedule, which starts with `Weekly schedule:`.
+
+---
+
+## Where to change things
+
+| To change... | Edit |
+|---|---|
+| Maximum daily dose (2500 mg) | `MAX_DAILY_DOSE` in `calculate.js`, `OPT_MAX_DAILY_MG` and the `maxMessage` text in `optimize.js`, and the number on `about.html`. **Four places.** |
+| Maximum mg/kg/day (35) | `OPT_MAX_MG_PER_KG` and the `maxMessage` text in `optimize.js`. |
+| Escalation step (+5 mg/kg/day) | `OPT_ESCALATION_STEP_MG_PER_KG` in `optimize.js` (also mentioned on `about.html`). |
+| Accepted lab ranges | `LAB_RANGES` in `calculate.js` (also listed on `about.html`). |
+| Escalation / weight-gain / toxicity thresholds | `calculateToxicity` and `toxicityReasons` in `calculate.js`, and the criteria table in `about.html`. |
+| Wording of a message | The string in `calculate.js` (dose and toxicity text) or `optimize.js` (optimization messages). |
+| "Last 2 months" wording | The question text in `dose_optimize.html`. The code does not count months; it uses the Yes/No answer. |
+| Formulation list | The `<option>` lists in `index.html` and `dose_optimize.html`. Values look like `capsule_500`, `Siklos_1000`, `liquid_100`; the number is the strength in mg (mg/mL for liquid). |
+| Siklos block size (250 mg) | `250` in `calculate.js` (Siklos branch) and `unitMg` in `optimize.js`. |
+| Colours, spacing, table look | `styles.css`. |
+| PDF layout and wording | The `downloadPdfBtn` click handler in `app.js`. |
+
+After any rule change, update `about.html` so the page matches the code.
+
+---
+
+## What the rules do
+
+### Initial Dosing
+- Dose = weight x chosen mg/kg (15, 20 or 25), capped at 2500 mg/day.
+- **Capsules:** whole capsules per week, spread across the week; also shows the weight at which one more capsule per week is added.
+- **Siklos:** 250 mg blocks of the scored tablet, same approach.
+- **Liquid:** rounded to 0.1 mL; the mg shown is what that volume delivers; same every day.
+- **Labs (optional):** neutrophil count required if labs are entered. Blank optional values are ignored. If ARC is blank but RBC (x10^9/L) and reticulocyte % are given, ARC = % / 100 x RBC. Values outside `LAB_RANGES` stop the calculation and name the values to recheck.
+- **Toxicity:** if criteria are met, the reasons are listed and no dose is shown until the clinician clicks "I understand, proceed with dosing recommendations". The report then says toxicity was flagged.
+
+### Dose Optimization (decision order)
+1. No labs at all: asks for at least one.
+2. Some labs missing: says which, and offers "Proceed without these values". With incomplete labs, toxicity is checked from what was entered, but **no increase is recommended** and the result is never "optimized".
+3. Any value out of range: stops and names it.
+4. Lab criteria give: increase / weight-gain adjustment / toxicity / optimized.
+5. Current dose above 2500 mg/day or 35 mg/kg/day: confirm dose and adherence, no further escalation (replaces an increase; added to other results).
+6. If labs said increase or weight-gain adjustment: recent dose reduction means no escalation; recent escalation means continue the same dose.
+7. Otherwise, for an increase: new dose = current + 5 mg/kg/day, limited by the maximums, rounded to whole capsules/blocks per week (at least one more than now) or to 0.1 mL, with a weekly schedule.
+
+Details for clinicians are on `about.html`.
+
+---
+
+## Running it locally
+
+No install needed. Either open `index.html` in a browser, or serve the folder (some features, such as SMART on FHIR, need a real web address):
+
+```
+python3 -m http.server 8000
+```
+
+then open <http://localhost:8000>.
+
+The PDF button needs internet access to load jsPDF from a CDN (see `index.html`). To work offline, download the two jsPDF files and point the `<script src>` lines at your copies.
+
+## Publishing (GitHub Pages)
+
+1. Put all the files in a GitHub repository (in the root, or in a folder you choose).
+2. Repository **Settings > Pages**, choose the branch and folder, save.
+3. The site is at `https://<user>.github.io/<repo>/`.
+
+GitHub Pages and browsers cache files. After an update, hard refresh (Ctrl+Shift+R) to see it.
+
+## Embedding in Wix
+
+Add an **Embed > Custom embed > Website address (iframe)** element pointing at the GitHub Pages address. Each page tells the parent its height with this message, which a Wix page can use to resize the frame:
+
+```js
+{ type: "hu-calculator-resize", height: <pixels> }
+```
+
+Wix's own language menu does not translate content inside the iframe; use the Google translate widget on each page.
+
+## Optional: SMART on FHIR (fill from an EHR)
+
+`launch.html`, `smart.js` and `config.js` let the calculators read weight and laboratory values from an EHR and fill the form.
+
+- Register the app with the EHR and put its client ID in `config.js`.
+- The EHR's **launch URL must be `launch.html`**, not `index.html`. Opening `index.html` directly skips the sign-in step and nothing fills in.
+- The app asks for read access to patient and observation data only. Values are filled in the form, highlighted, and can be changed; they are not stored or sent anywhere.
+- Lab codes used are in `smart.js` (`ANALYTES`). Check them against the target EHR before relying on them.
+- The SMART sandbox (launch.smarthealthit.org) is useful for testing.
+
+## Feedback and translation
+
+- Feedback is a Google Form, linked at the bottom of the Initial Dosing and About pages. The calculators do not send patient data to it.
+- The language menu is the free Google Translate widget. The list of languages is `includedLanguages` in each page. It sends page text, including any result shown, to Google, and machine translation of dosing text has not been checked by clinicians.
+
+---
+
+## Testing checklist
+
+Check these after any change (open the browser console with F12; there should be no red errors).
+
+| Case | Expected |
+|---|---|
+| Initial: 23.5 kg, 25 mg/kg, 500 mg capsule, no labs | 8 capsules/week (571 mg daily) with a weekly table; escalation to 9 capsules/week at 25.71 kg. |
+| Initial: 40 kg, 25 mg/kg, 500 mg capsule | 14 capsules/week (1000 mg daily, 2 capsules/day). |
+| Initial: 23.5 kg, 25 mg/kg, liquid 100 mg/mL | 590 mg daily (5.9 mL/day), table with the same value for all 7 days. |
+| Initial: 120 kg, 25 mg/kg | Note that 3000 mg is capped at 2500 mg/day. |
+| Initial, labs Yes, neutrophil 2, others blank | Dose shown (no false toxicity). |
+| Initial, labs Yes: Hb 6, ARC 40, neutrophil 2, platelets 250 | Toxicity message with the reason; override button; clicking it shows the dose. |
+| Initial, labs Yes: Hb 80, platelets 250000 | Out-of-range message naming both. |
+| Initial, RBC 4500 and reticulocyte % 2 | ARC box fills with 90. |
+| Optimize: 20 kg, 500 mg, capsule 500, ANC 4, Plt 300, Hb 9, ARC 80, no recent changes | Escalation message with new dose and weekly table. |
+| Same, with dose 800 mg | Over 35 mg/kg message, no escalation. |
+| Same, "dose reduction in last 2 months" = Yes | No escalation at this time. |
+| Same, "dose escalation in last 2 months" = Yes | Continue the same dose. |
+| Optimize with Hb and ARC blank | Prompt listing missing values; "Proceed" gives no increase. |
+| Choose Liquid on the optimization page | "How many capsules per week" row is hidden. |
+| Download PDF on each formulation | PDF opens, tables intact. |
+
+## Known limitations
+
+- The weight-gain result states that an adjustment is recommended but does not calculate it.
+- The criteria "dose within 2.5 mg/kg of the starting dose" and "toxicity persisting beyond 2 weeks" are not checked.
+- "Missed multiple doses" on the optimization page is collected but not used in the result.
+- Lab rules use fixed thresholds with no rounding or tolerance, so a value exactly on a limit follows the comparison written in `calculate.js` (for example `> 3.0`, `< 0.75`).
+- Hemoglobin exactly 8 g/dL falls between the two weight-gain ARC rules (`< 8` and `> 8`), so that rule does not apply at exactly 8.
+- Not validated or approved for clinical use; has not been reviewed by a regulatory body.
+- Translations are machine-generated.
+
+## Before real clinical use
+
+- Have the dosing rules and every message reviewed and signed off by the responsible clinicians.
+- Check institutional requirements for software used in patient care and for use of patient data.
+- Test with the EHR vendor's own sandbox if SMART on FHIR is used.

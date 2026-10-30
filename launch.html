@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connecting to EHR</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; max-width: 520px; margin: 3rem auto; padding: 0 1rem; color: #222; }
+  input { width: 100%; box-sizing: border-box; padding: 0.5rem; margin: 0.5rem 0; }
+  button { padding: 0.5rem 1rem; cursor: pointer; }
+  .error { color: #c0392b; }
+  .note { font-size: 0.9rem; color: #555; }
+</style>
+</head>
+<body>
+<h2>Hydroxyurea Dosing Calculator</h2>
+<p id="status">Connecting to your EHR&hellip;</p>
+
+<form id="standaloneForm" style="display:none;">
+  <p>No EHR launch information was found. To connect to a FHIR server directly, enter its base URL:</p>
+  <input type="url" id="serverUrl" placeholder="https://your-ehr.example.org/fhir" required>
+  <button type="submit">Connect</button>
+  <p class="note">Or <a href="index.html">continue without an EHR</a> and enter values manually.</p>
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/fhirclient@2/build/fhir-client.js"></script>
+<script src="config.js"></script>
+<script>
+(function () {
+  const cfg = window.SMART_CONFIG;
+  const params = new URLSearchParams(window.location.search);
+  const status = document.getElementById('status');
+
+  function fail(err) {
+    status.className = 'error';
+    status.textContent = 'Could not start the EHR connection: ' + (err && err.message ? err.message : err);
+    document.getElementById('standaloneForm').style.display = 'block';
+  }
+
+  if (!window.FHIR) {
+    fail('the SMART client library did not load.');
+    return;
+  }
+
+  if (params.get('iss')) {
+    // EHR launch: the EHR supplied ?iss=...&launch=...; the library reads both.
+    FHIR.oauth2.authorize({
+      clientId: cfg.clientId,
+      scope: cfg.scope,
+      redirectUri: 'index.html'
+    }).catch(fail);
+  } else {
+    // Standalone launch: ask which server to connect to.
+    status.textContent = '';
+    document.getElementById('standaloneForm').style.display = 'block';
+    document.getElementById('standaloneForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      status.className = '';
+      status.textContent = 'Connecting…';
+      FHIR.oauth2.authorize({
+        clientId: cfg.clientId,
+        scope: cfg.scope + ' ' + cfg.standaloneScope,
+        redirectUri: 'index.html',
+        fhirServiceUrl: document.getElementById('serverUrl').value.trim()
+      }).catch(fail);
+    });
+  }
+})();
+</script>
+</body>
+</html>

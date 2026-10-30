@@ -4,22 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hydroxyurea Dose Optimization Calculator</title>
-  <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="google_translate_element"></div>
-
-<script type="text/javascript">
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    includedLanguages: 'es,fr,pt,en',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-    autoDisplay: false
-  }, 'google_translate_element');
-}
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <div class="navbar">
   <a href="index.html"><button type="button">Initial Dosing Calculator</button></a>
   <a href="dose_optimize.html"><button type="button">Dose Optimization Calculator</button></a>
@@ -31,67 +18,18 @@ function googleTranslateElementInit() {
 <h3>Enter Participant's Information</h3>
 
 <form id="optimizeForm">
+  <!-- 1. Weight -->
   <p>
-    <label>What is the patient's current weight in kg? <span class="required-asterisk">*</span></label><br>
+    <label>Weight (kg) <span class="required-asterisk">*</span></label>
     <input type="number" step="any" id="weight" min="0" required>
   </p>
 
-  <h3>Hydroxyurea Info</h3>
-  <!-- <div class="lab-subbox">
-
-
-   <p>
-    <label>Current Daily Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="dose" min="0" required>
-    &emsp;
-  </p>
-       OR &ensp;
-      <p>
-    <label>How many capsules per week?</label>
-    <input type="number" step="any" id="caps_dose" min="0" required>
-    &emsp;
-     <p>
-    <label>Formulation </label>
-    <select id="medType" required>
-      <option value="" disabled selected>Formulation</option>
-      <option value="capsule_500">500 mg Capsule</option>
-      <option value="Siklos_1000">Siklos (eq 1000 mg dissolvable and scoreable tablets)</option>
-      <option value="capsule_100">100 mg Capsule</option>
-      <option value="capsule_200">200 mg Capsule</option>
-      <option value="capsule_300">300 mg Capsule</option>
-      <option value="capsule_400">400 mg Capsule</option>
-    </select>
-    </p>
-  </p> -->
-  <!-- <p>
-    <label>Current Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="dose" min="0" required>
-    &emsp;
+  <!-- 2. Formulation -->
+  <p>
     <label>Formulation <span class="required-asterisk">*</span></label>
     <select id="medType" required>
       <option value="" disabled selected>Formulation</option>
-      <option value="liquid">Liquid</option>
-      <option value="capsule">Capsule</option>
-    </select>
-  </p> -->
-  <!-- </div> -->
-  <div class="lab-subbox">
-  <div class="lab-row">
-    <label>Current Daily Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="dose" min="0" required>
-  </div>
-
-  <div class="lab-or">OR</div>
-
-  <div class="lab-row">
-    <label>How many capsules per week?</label>
-    <input type="number" step="any" id="caps_dose" min="0">
-  </div>
-
-  <div class="lab-row">
-    <label>Formulation</label>
-    <select id="medType">
-      <option value="" disabled selected>Formulation</option>
+      <option value="liquid_100">Hydroxyurea liquid suspension 100 mg/mL</option>
       <option value="capsule_500">500 mg Capsule</option>
       <option value="Siklos_1000">Siklos (eq 1000 mg dissolvable and scoreable tablets)</option>
       <option value="capsule_100">100 mg Capsule</option>
@@ -99,17 +37,32 @@ function googleTranslateElementInit() {
       <option value="capsule_300">300 mg Capsule</option>
       <option value="capsule_400">400 mg Capsule</option>
     </select>
-  </div>
-</div>
-
-  <p>
-    <label>Do you have concerns that the patient may have poor adherence? <span class="required-asterisk">*</span></label>
-    &emsp;
-    <input type="radio" id="adh_low" name="adherence" value="true" required> <label for="esc_yes">Yes</label>
-    &emsp;
-    <input type="radio" id="adh_hi" name="adherence" value="false" required> <label for="esc_no">No</label>
   </p>
 
+  <h3>Hydroxyurea Info</h3>
+  <div class="lab-subbox">
+    <div class="lab-row">
+      <label>Current Daily Hydroxyurea Dose (mg) <span class="required-asterisk">*</span></label>
+      <input type="number" step="any" id="dose" min="0" required>
+    </div>
+
+    <!-- Hidden for liquid and until a formulation is chosen (optimize.js shows/hides it) -->
+    <div id="capsRow" style="display:none;">
+      <div class="lab-or">OR</div>
+      <div class="lab-row">
+        <label id="capsLabel">How many capsules per week?</label>
+        <input type="number" step="any" id="caps_dose" min="0">
+      </div>
+    </div>
+  </div>
+
+  <p>
+    <label>Has the patient missed multiple doses in the previous month? <span class="required-asterisk">*</span></label>
+    &emsp;
+    <input type="radio" id="missed_yes" name="missed" value="true" required> <label for="missed_yes">Yes</label>
+    &emsp;
+    <input type="radio" id="missed_no" name="missed" value="false" required> <label for="missed_no">No</label>
+  </p>
 
   <p>
     <label>Has the patient had a dose escalation in the past 2 months? <span class="required-asterisk">*</span></label>
@@ -126,43 +79,36 @@ function googleTranslateElementInit() {
     &emsp;
     <input type="radio" id="red_no" name="reduction" value="false" required> <label for="red_no">No</label>
   </p>
-   
-
 
   <h3>Lab Values</h3>
-  <p>
-    <label>Hemoglobin <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="hemoglobin" min="0" required> x10<sup>9</sup> g/dL
-    &ensp;
-      </p>
-   <p>
-    <label>Absolute Neutrophil Count <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="neutrophil" min="0" required> x10<sup>9</sup>/L
-    <br><br>
-      </p>
-     <p>
-    <label>Absolute Reticulocyte Count <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="reticulocyte" min="0" required> x10<sup>9</sup>/L
-    &ensp;
-   </p>
-     <p>
-    <label>Platelet Count <span class="required-asterisk">*</span></label>
-    <input type="number" step="any" id="platelet" min="0" required> x10<sup>9</sup>/L
-  </p>
+  <!-- No "required" on the labs: the calculator asks about missing ones and lets the user proceed -->
+  <div class="lab-row">
+    <label>Hemoglobin</label>
+    <input type="number" step="any" id="hemoglobin" min="0"> g/dL
+  </div>
+  <div class="lab-row">
+    <label>Absolute Neutrophil Count</label>
+    <input type="number" step="any" id="neutrophil" min="0"> x10<sup>9</sup>/L
+  </div>
+  <div class="lab-row">
+    <label>Absolute Reticulocyte Count</label>
+    <input type="number" step="any" id="reticulocyte" min="0"> x10<sup>9</sup>/L
+  </div>
+  <div class="lab-row">
+    <label>Platelet Count</label>
+    <input type="number" step="any" id="platelet" min="0"> x10<sup>9</sup>/L
+  </div>
 
   <p><button type="submit">Submit</button></p>
 </form>
 
 <div class="output-box" id="outputBox" style="display:none;">
   <h3>Dosing Recommendation</h3>
-  <p id="resultView"></p>
-</div>
-  <div>
-<p class="note">Please give feedback <a href="https://forms.gle/1LajJHmrRR2WxYnF8">here</a></p>
+  <div id="resultView"></div>
 </div>
 
 <script src="calculate.js"></script>
+<script src="render.js"></script>
 <script src="optimize.js"></script>
-<script src="app.js"></script> 
 </body>
 </html>

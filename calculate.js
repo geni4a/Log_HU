@@ -30,37 +30,9 @@ function pythonRound(x) {
     if (diff > 0.5) return floor + 1;
     return (floor % 2 === 0) ? floor : floor + 1;
 }
+
 const CAPSULE_UNIT = { one: "capsule", other: "capsules" };
 const SIKLOS_UNIT  = { one: "scored tablet block", other: "scored tablet blocks" };
-
-// function buildSchedule(capsPerDay, extraCaps) {
-//     const schedule = new Array(7).fill(capsPerDay);
-//     if (extraCaps > 0) {
-//         const step = 7 / extraCaps;
-//         const extraIndices = new Set();
-//         for (let i = 0; i < extraCaps; i++) extraIndices.add(pythonRound(i * step) % 7);
-//         for (const idx of extraIndices) schedule[idx] += 1;
-//     }
-//     const lines = [];
-//     for (let i = 0; i < 7; i++) {
-//         const day = DAYS[i];
-//         const caps = schedule[i];
-//         lines.push(caps === 0 ? `  ${day}: off` : `  ${day}: ${caps} ${caps === 1 ? "capsule" : "capsules"}`);
-//     }
-//     return lines.join("\n");
-// }
-
-// function formatScheduleBlock(capsPerWeek) {
-//     let capsPerDay, extraCaps;
-//     if (capsPerWeek >= 7) {
-//         capsPerDay = Math.floor(capsPerWeek / 7);
-//         extraCaps = capsPerWeek % 7;
-//     } else {
-//         capsPerDay = 0;
-//         extraCaps = capsPerWeek;
-//     }
-//     return buildSchedule(capsPerDay, extraCaps);
-// }
 
 function buildSchedule(capsPerDay, extraCaps, unit = CAPSULE_UNIT) {
     const schedule = new Array(7).fill(capsPerDay);
@@ -102,7 +74,7 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     const currentSchedule = formatScheduleBlock(capsDown);
     const currentMg = (capsDown * typeAmt) / 7;
     const lines = [
-        `${note}Recommended Starting Dose:  ${capsDown} capsules/week (~${Math.round(currentMg)} mg daily)\n`,
+        `${note}Recommended Starting Dose: ${capsDown} capsules/week (${Math.round(currentMg)} mg daily)\n`,
         `Weekly schedule:\n${currentSchedule}`,
     ];
     if (capsUp !== capsDown) {
@@ -111,7 +83,7 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
         const nextSchedule = formatScheduleBlock(capsUp);
         lines.push(
             `\nEscalation (when weight reaches ${newWeight.toFixed(2)} kg):`,
-            `${capsUp} capsules/week (${Math.round(newDoseMg)} mg/day average)\n`,
+            `  → ${capsUp} capsules/week (${Math.round(newDoseMg)} mg/day average)\n`,
             `Weekly schedule:\n${nextSchedule}`
         );
     }
@@ -162,8 +134,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
     if (rawDose > MAX_DAILY_DOSE) {
         note = `Note: Weight-based dose (${Math.round(rawDose)} mg/day) exceeds the ${MAX_DAILY_DOSE} mg/day maximum. Capping at ${MAX_DAILY_DOSE} mg/day.\n\n`;
     }
-    if (medType === "capsule") 
-        return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
+    if (medType === "capsule") return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
     if (medType === "liquid") {
         // 0.1 mL is the finest practical measure, so round the volume first,
         // then show the mg that volume actually delivers.
@@ -176,13 +147,9 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         const capsDown = Math.floor(dosePerWeek / 250);
         const capsUp = Math.ceil(dosePerWeek / 250);
         const currentSchedule = formatScheduleBlock(capsDown, SIKLOS_UNIT);
-        // const lines = [
-        //     `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
-        //     `  → ${capsDown} scored tablet block(s)/week\n`,
-        //     `Weekly schedule:\n${currentSchedule}`,
-        // ];
-            const lines = [
-            `${note}Recommended Starting Dose:  ${capsDown} scored tablet blocks (~${Math.round(dosePerDay)} mg once daily)\n`,
+        const lines = [
+            `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
+            `  → ${capsDown} scored tablet block(s)/week\n`,
             `Weekly schedule:\n${currentSchedule}`,
         ];
         if (capsUp !== capsDown) {

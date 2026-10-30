@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -72,6 +72,138 @@ function googleTranslateElementInit() {
   <p> Within a column, all the neutrophil, platelet, and reticulocyte/hemoglobin criteria must be met, except for toxicity, where meeting any one criterion counts. </p>
     <p>If more than one column applies, the calculator reports them in this order: escalation, then weight-gain adjustment, then toxicity; otherwise it reports that the dose is optimized.</p>
 <p>The calculator evaluates lab values only. It does not check how far the dose has moved from the starting dose, or whether toxicity has persisted beyond 2 weeks; these need to be confirmed by the clinician.</p>
+
+<p class="note"><strong>Clinical decision support tool only.</strong> Always confirm recommendations with a qualified clinician.</p>
+<p class="note">Please give feedback <a href="https://forms.gle/1LajJHmrRR2WxYnF8">here</a></p>
+
+
+<script>
+function notifyParentOfResize() {
+    if (window.parent !== window) {
+        window.parent.postMessage({ type: "hu-calculator-resize", height: document.body.scrollHeight }, "*");
+    }
+}
+window.addEventListener('load', notifyParentOfResize);
+</script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About - Hydroxyurea Dosing Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="google_translate_element"></div>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'es,fr,pt,en',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<div class="navbar">
+  <a href="index.html"><button type="button">Initial Dosing Calculator</button></a>
+  <a href="dose_optimize.html"><button type="button">Dose Optimization Calculator</button></a>
+  <a href="about.html"><button type="button">About</button></a>
+</div>
+<hr>
+
+<h2>About</h2>
+
+<p class="note"><strong>Clinical decision support tool only.</strong> This calculator supports, and does not replace, clinical judgment. Always confirm recommendations with a qualified clinician.</p>
+
+<h3>Initial Dosing Calculator</h3>
+<p>The daily dose is the patient's weight multiplied by the chosen starting dose (15, 20, or 25 mg/kg/day), capped at 2500 mg/day. If the cap is applied, the result says so. The dose is then converted to the selected formulation, and every result includes a day-by-day weekly schedule that can be downloaded as a PDF.</p>
+<ul>
+  <li><strong>Capsules:</strong> if the daily dose divides evenly into whole capsules, the same number is given every day. Otherwise the dose is rounded down to whole capsules per week and spread as evenly as possible across the days. The result also shows the weight at which one more capsule per week would be added (the escalation weight), with its schedule.</li>
+  <li><strong>Siklos:</strong> dosed in 250 mg blocks of the scored tablet, with the same weekly spread and escalation weight.</li>
+  <li><strong>Liquid (100 mg/mL):</strong> the volume is rounded to the nearest 0.1 mL, and the mg shown is the amount that volume actually delivers. The same volume is given every day.</li>
+</ul>
+
+<h4>Baseline laboratory values</h4>
+<p>Baseline labs are optional. If they are entered, they are checked before any dose is calculated:</p>
+<ul>
+  <li>The absolute neutrophil count is required when labs are entered. Other values may be left blank; a blank value is ignored, not counted as zero.</li>
+  <li>If the absolute reticulocyte count (ARC) is blank but the RBC count and reticulocyte percentage are both entered, the ARC is calculated as reticulocyte % &divide; 100 &times; RBC count. RBC count must be in x10<sup>9</sup>/L (for example 4500, not 4.5).</li>
+  <li>Each value is checked against the entry ranges below. If any value is outside its range, the calculator lists which values to recheck and does not calculate a dose.</li>
+  <li>If the values meet the toxicity criteria below, the calculator reports which criterion was met and why, and does not show a dose. The clinician can review the reasons and then choose <em>I understand, proceed with dosing recommendations</em> to see the dose. The report then records that toxicity was flagged.</li>
+</ul>
+
+<h4>Entry ranges for laboratory values</h4>
+<p>These ranges exist to catch typing and unit errors (for example hemoglobin entered in g/L, or platelets entered per &micro;L).</p>
+<table class="guidelines">
+  <tr><th>Laboratory value</th><th>Accepted range</th></tr>
+  <tr><th class="rowhead">Hemoglobin</th><td>2.0 to 15.0 g/dL</td></tr>
+  <tr><th class="rowhead">Absolute neutrophil count</th><td>0.1 to 20 x 10<sup>9</sup>/L</td></tr>
+  <tr><th class="rowhead">Absolute reticulocyte count</th><td>10 to 999 x 10<sup>9</sup>/L</td></tr>
+  <tr><th class="rowhead">Platelet count</th><td>10 to 999 x 10<sup>9</sup>/L</td></tr>
+</table>
+
+<h3>Dose Optimization Calculator</h3>
+<p>This calculator is for a patient who is already taking hydroxyurea. It asks for weight, formulation, current daily dose, recent dose changes, and current laboratory values. For capsules and Siklos, the current dose can be entered either in mg per day or as the number of capsules (or tablet blocks) per week, which fills in the daily dose.</p>
+<p>The calculator works through the following in order:</p>
+<ol>
+  <li><strong>Laboratory values.</strong> If some values are missing, the calculator says which, and the user can go back to add them or choose to proceed without them. With incomplete labs, toxicity is still checked from the values entered, but an increase is never recommended, and the result is never reported as "optimized". Values outside the entry ranges above stop the calculation.</li>
+  <li><strong>Laboratory criteria.</strong> The values are compared with the table below, giving one of four results: dose increase, adjust for weight gain, toxicity (with the reasons listed), or dose is optimized.</li>
+  <li><strong>Dose above the traditional maximum.</strong> If the current dose is above 2500 mg/day or 35 mg/kg/day, the calculator asks the user to confirm the dose and adherence, and advises no further escalation. This replaces an increase recommendation; toxicity and "optimized" results are kept, with this note added.</li>
+  <li><strong>Recent dose changes.</strong> If the labs would lead to an increase or a weight-gain adjustment:
+    <ul>
+      <li>A dose reduction in the last 2 months: dose escalation is not recommended at this time.</li>
+      <li>A dose escalation in the last 2 months: the same dose is continued.</li>
+    </ul>
+  </li>
+  <li><strong>The new dose.</strong> If an increase is recommended, the new dose is the current dose plus 5 mg/kg/day, never above 2500 mg/day or 35 mg/kg/day. For capsules and Siklos it is rounded to a whole number of capsules (or tablet blocks) per week, always at least one more than now; for liquid, to the nearest 0.1 mL. The result shows the new dose and a weekly schedule, and reminds the user to confirm adherence at the current dose before increasing.</li>
+</ol>
+
+<h3>Hydroxyurea Dose Adjustment Guidelines</h3>
+<table class="guidelines">
+  <tr>
+    <th class="blank"></th>
+    <th>Escalation Criteria<br>(Dose Increase)</th>
+    <th>Criteria to Adjust Dose for Weight Gain if Dose &le;2.5 mg/kg from starting dose</th>
+    <th>Toxicity Criteria (Dose hold or reduction if toxicity persists beyond 2 weeks)</th>
+  </tr>
+  <tr>
+    <th class="rowhead">Neutrophils</th>
+    <td>&gt;3.0 x 10<sup>9</sup>/L</td>
+    <td>&gt;1.5 x 10<sup>9</sup>/L</td>
+    <td>&lt;0.75 x 10<sup>9</sup>/L</td>
+  </tr>
+  <tr>
+    <th class="rowhead">Platelets</th>
+    <td>&gt;100 x 10<sup>9</sup>/L</td>
+    <td>&gt;120 x 10<sup>9</sup>/L</td>
+    <td>&lt;80 x 10<sup>9</sup>/L</td>
+  </tr>
+  <tr>
+    <th class="rowhead">Reticulocytes and Hemoglobin</th>
+    <td>ARC &gt;50 x 10<sup>9</sup>/L if Hb &gt;7 g/dL</td>
+    <td>ARC &gt;100 x 10<sup>9</sup>/L if Hb &lt;8 g/dL<br>ARC &gt;75 if Hb &gt;8 g/dL</td>
+    <td>ARC &lt;50 x 10<sup>9</sup>/L if Hb &lt;7 g/dL</td>
+  </tr>
+</table>
+<p class="note">ARC = absolute reticulocyte count; Hb = hemoglobin.</p>
+<p>Within the escalation and weight-gain columns, all of the neutrophil, platelet, and reticulocyte/hemoglobin criteria must be met. For toxicity, meeting any one criterion counts. If more than one column applies, the calculator reports them in this order: escalation, then weight-gain adjustment, then toxicity; otherwise it reports that the dose is optimized.</p>
+
+<h3>What the calculators do not check</h3>
+<ul>
+  <li>Whether toxicity has persisted beyond 2 weeks, or how far the dose has moved from the starting dose. The clinician must confirm these.</li>
+  <li>The answers to "missed multiple doses in the previous month" do not change the result. Adherence should be confirmed by the clinician before any increase.</li>
+  <li>For the weight-gain result, the calculator reports that an adjustment is recommended but does not calculate the adjusted dose.</li>
+  <li>Allergies, other medicines, kidney or liver function, pregnancy, and anything else not listed above.</li>
+</ul>
+
+<h3>Your data</h3>
+<p>Calculations run in your web browser. Values you enter are not sent anywhere by the calculators. When the page is opened from an electronic health record (EHR), weight and laboratory values may be read from the patient's record to fill in the form; they are used only on your screen, and you should check them before relying on the result. Feedback is collected only if you choose to send it, through the feedback form below. If you use the language menu at the top of the page, the page text, including any result shown, is sent to Google to be translated, so avoid translating a page that shows patient information if that is not permitted where you work.</p>
 
 <p class="note"><strong>Clinical decision support tool only.</strong> Always confirm recommendations with a qualified clinician.</p>
 <p class="note">Please give feedback <a href="https://forms.gle/1LajJHmrRR2WxYnF8">here</a></p>
