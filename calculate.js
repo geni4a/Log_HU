@@ -30,8 +30,39 @@ function pythonRound(x) {
     if (diff > 0.5) return floor + 1;
     return (floor % 2 === 0) ? floor : floor + 1;
 }
+const CAPSULE_UNIT = { one: "capsule", other: "capsules" };
+const SIKLOS_UNIT  = { one: "scored tablet block", other: "scored tablet blocks" };
 
-function buildSchedule(capsPerDay, extraCaps) {
+// function buildSchedule(capsPerDay, extraCaps) {
+//     const schedule = new Array(7).fill(capsPerDay);
+//     if (extraCaps > 0) {
+//         const step = 7 / extraCaps;
+//         const extraIndices = new Set();
+//         for (let i = 0; i < extraCaps; i++) extraIndices.add(pythonRound(i * step) % 7);
+//         for (const idx of extraIndices) schedule[idx] += 1;
+//     }
+//     const lines = [];
+//     for (let i = 0; i < 7; i++) {
+//         const day = DAYS[i];
+//         const caps = schedule[i];
+//         lines.push(caps === 0 ? `  ${day}: off` : `  ${day}: ${caps} ${caps === 1 ? "capsule" : "capsules"}`);
+//     }
+//     return lines.join("\n");
+// }
+
+// function formatScheduleBlock(capsPerWeek) {
+//     let capsPerDay, extraCaps;
+//     if (capsPerWeek >= 7) {
+//         capsPerDay = Math.floor(capsPerWeek / 7);
+//         extraCaps = capsPerWeek % 7;
+//     } else {
+//         capsPerDay = 0;
+//         extraCaps = capsPerWeek;
+//     }
+//     return buildSchedule(capsPerDay, extraCaps);
+// }
+
+function buildSchedule(capsPerDay, extraCaps, unit = CAPSULE_UNIT) {
     const schedule = new Array(7).fill(capsPerDay);
     if (extraCaps > 0) {
         const step = 7 / extraCaps;
@@ -42,13 +73,13 @@ function buildSchedule(capsPerDay, extraCaps) {
     const lines = [];
     for (let i = 0; i < 7; i++) {
         const day = DAYS[i];
-        const caps = schedule[i];
-        lines.push(caps === 0 ? `  ${day}: off` : `  ${day}: ${caps} ${caps === 1 ? "capsule" : "capsules"}`);
+        const n = schedule[i];
+        lines.push(n === 0 ? `  ${day}: off` : `  ${day}: ${n} ${n === 1 ? unit.one : unit.other}`);
     }
     return lines.join("\n");
 }
 
-function formatScheduleBlock(capsPerWeek) {
+function formatScheduleBlock(capsPerWeek, unit = CAPSULE_UNIT) {
     let capsPerDay, extraCaps;
     if (capsPerWeek >= 7) {
         capsPerDay = Math.floor(capsPerWeek / 7);
@@ -57,21 +88,21 @@ function formatScheduleBlock(capsPerWeek) {
         capsPerDay = 0;
         extraCaps = capsPerWeek;
     }
-    return buildSchedule(capsPerDay, extraCaps);
+    return buildSchedule(capsPerDay, extraCaps, unit);
 }
 
 function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     if (dosePerDay % typeAmt === 0) {
         const caps = Math.floor(dosePerDay / typeAmt);
         const schedule = buildSchedule(caps, 0);
-        return `${note}Recommended Starting Dose: ${caps}capsules (${Math.round(dosePerDay)} mg once daily, ${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
+        return `${note}Recommended Starting Dose: ${caps * 7} capsules/week (${Math.round(dosePerDay)} mg daily, ${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
     }
     const capsDown = Math.floor(dosePerWeek / typeAmt);
     const capsUp = Math.ceil(dosePerWeek / typeAmt);
     const currentSchedule = formatScheduleBlock(capsDown);
     const currentMg = (capsDown * typeAmt) / 7;
     const lines = [
-        `${note}Recommended Starting Dose: (${Math.round(currentMg)} mg once daily)\n`,
+        `${note}Recommended Starting Dose:  ${capsDown} capsules/week (~${Math.round(currentMg)} mg daily)\n`,
         `Weekly schedule:\n${currentSchedule}`,
     ];
     if (capsUp !== capsDown) {
@@ -80,7 +111,7 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
         const nextSchedule = formatScheduleBlock(capsUp);
         lines.push(
             `\nEscalation (when weight reaches ${newWeight.toFixed(2)} kg):`,
-            `  → ${capsUp} capsules/week (${Math.round(newDoseMg)} mg/day average)\n`,
+            `${capsUp} capsules/week (${Math.round(newDoseMg)} mg/day average)\n`,
             `Weekly schedule:\n${nextSchedule}`
         );
     }
@@ -139,12 +170,12 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         const mlPerDay = Math.round(dosePerDay / typeAmt * 10) / 10;
         const mg = Math.round(mlPerDay * typeAmt);
         const dayLines = DAYS.map(day => `  ${day}: ${mlPerDay.toFixed(1)} mL (${mg} mg)`).join("\n");
-        return `${note}Recommended Starting Dose: ${mg} mg once daily (${mlPerDay.toFixed(1)} mL/day)\n\nWeekly schedule:\n${dayLines}`;
+        return `${note}Recommended Starting Dose: ${mg} mg daily (${mlPerDay.toFixed(1)} mL/day)\n\nWeekly schedule:\n${dayLines}`;
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);
         const capsUp = Math.ceil(dosePerWeek / 250);
-        const currentSchedule = formatScheduleBlock(capsDown);
+        const currentSchedule = formatScheduleBlock(capsDown, SIKLOS_UNIT);
         // const lines = [
         //     `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
         //     `  → ${capsDown} scored tablet block(s)/week\n`,
@@ -156,7 +187,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         ];
         if (capsUp !== capsDown) {
             const newWeight = ((capsUp * 250) / 7) / dosing;
-            const nextSchedule = formatScheduleBlock(capsUp);
+            const nextSchedule = formatScheduleBlock(capsUp, SIKLOS_UNIT);
             lines.push(
                 `\nEscalation (when weight reaches ${newWeight.toFixed(2)} kg):`,
                 `  → ${capsUp} scored tablet block(s)/week\n`,
