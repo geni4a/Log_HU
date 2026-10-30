@@ -131,17 +131,15 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
     if (rawDose > MAX_DAILY_DOSE) {
         note = `Note: Weight-based dose (${Math.round(rawDose)} mg/day) exceeds the ${MAX_DAILY_DOSE} mg/day maximum. Capping at ${MAX_DAILY_DOSE} mg/day.\n\n`;
     }
-    if (medType === "capsule") return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
+    if (medType === "capsule") 
+        return capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note);
     if (medType === "liquid") {
         // 0.1 mL is the finest practical measure, so round the volume first,
         // then show the mg that volume actually delivers.
         const mlPerDay = Math.round(dosePerDay / typeAmt * 10) / 10;
-        // const lines = [
-        //     `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
-        //     `  → ${capsDown} scored tablet block(s)/week\n`,
-        //     `Weekly schedule:\n${currentSchedule}`,
-        // ];
-        return `${note}Recommended Starting Dose: ${capsDown} per week (${Math.round(mlPerDay * typeAmt)} mg once daily) (${mlPerDay.toFixed(1)} mL/day)`;
+        const mg = Math.round(mlPerDay * typeAmt);
+        const dayLines = DAYS.map(day => `  ${day}: ${mlPerDay.toFixed(1)} mL (${mg} mg)`).join("\n");
+        return `${note}Recommended Starting Dose: ${mg} mg once daily (${mlPerDay.toFixed(1)} mL/day)\n\nWeekly schedule:\n${dayLines}`;
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);
@@ -153,7 +151,7 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         //     `Weekly schedule:\n${currentSchedule}`,
         // ];
             const lines = [
-            `${note}Recommended Starting Dose:  ${capsDown} scored tablet block(s)/week (~${Math.round(dosePerDay)} mg once daily)\n`,
+            `${note}Recommended Starting Dose:  ${capsDown} scored tablet blocks (~${Math.round(dosePerDay)} mg once daily)\n`,
             `Weekly schedule:\n${currentSchedule}`,
         ];
         if (capsUp !== capsDown) {
