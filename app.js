@@ -1,23 +1,24 @@
 /* Page wiring */
 let lastRecommendation = "";
 let lastPdfData = {};
-
-
 let lastArgs = null;
 
+// Clinician confirmed they want dosing despite flagged lab toxicity
 function proceedDespiteToxicity() {
     const a = lastArgs;
     lastRecommendation = calculateInitialDosing(a.weight, a.medType, a.dosing, a.typeAmt, a.labsTrue, a.labs, true);
+    lastPdfData.toxicity = true;
     renderResult(lastRecommendation, lastPdfData);
     document.getElementById('resultView').insertAdjacentHTML('afterbegin',
         '<p class="rec-message"><em>Laboratory toxicity was flagged. Dosing is shown after clinician review.</em></p>');
     document.getElementById('downloadPdfBtn').style.display = '';
     notifyParentOfResize();
 }
-/* 
+
+/*
    Reading the recommendation text. Used by BOTH the on-screen report
    and the PDF, so the two always match.
-   */
+*/
 function parseSchedule(text) {
     const rows = [];
     for (const line of text.split("\n")) {
@@ -43,9 +44,23 @@ function headerLines(block) {
     return lines;
 }
 
+// Readable formulation name for the report and the PDF
+function formulationLabel(raw) {
+    const [kind, amt] = raw.split('_');
+    if (kind === 'capsule') return amt + ' mg capsule';
+    if (kind === 'Siklos') return 'Siklos (1000 mg scored tablet)';
+    return 'Liquid suspension ' + amt + ' mg/mL';
+}
+
+// The Laboratory Toxicity row of the summary table
+function toxicityStatus(d) {
+    if (!d.labsTrue) return 'Not assessed';
+    return d.toxicity ? 'Yes (dosing shown after clinician review)' : 'No';
+}
+
 /*
    On-screen report: same structure as the PDF
-   */
+*/
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function tableHtml(head, rows) {
@@ -58,20 +73,15 @@ function scheduleSection(title, block) {
     const rows = parseSchedule(block);
     const lines = headerLines(block);
     return `<h4>${title}</h4><p class="rec-sub">${lines.map(esc).join('<br>')}</p>` +
-        tableHtml(['Day', 'Dose'], rows.length ? rows : [['\u2014', lines[0] || '']]);
+        tableHtml(['Day', 'Dose'], rows.length ? rows : [['—', lines[0] || '']]);
 }
 
 function renderResult(rec, d) {
     const view = document.getElementById('resultView');
     const pdfBtn = document.getElementById('downloadPdfBtn');
 
-    // Messages with no dose (for example "Laboratory Toxicity detected...") are shown as plain text.
-    // if (!/Recommended dose/.test(rec)) {
-    //     view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p></div>';
-    //     pdfBtn.style.display = 'none';
-    //     return;
-    // }
-   if (!/Recommended (Starting )?Dose:/i.test(rec)) {
+    // Messages with no dose (toxicity, out-of-range values, ...) are shown as plain text.
+    if (!/Recommended (Starting )?Dose:/i.test(rec)) {
         const isToxicity = rec.startsWith("Laboratory Toxicity");
         view.innerHTML = '<div class="rec-report"><p class="rec-message">' + esc(rec) + '</p>' +
             (isToxicity ? '<p><button type="button" id="overrideBtn">I understand, proceed with dosing recommendations</button></p>' : '') +
@@ -92,12 +102,10 @@ function renderResult(rec, d) {
         '<h4>Prescription Summary</h4>' +
         tableHtml(['Parameter', 'Value'], [
             ['Patient Weight', d.weight + ' kg'],
-            // ['Formulation', d.med_type.replace('_', ' mg ')],
             ['Preferred Starting mg/kg dose', d.dosing + ' mg/kg per day'],
-            ['Hydroxyurea Formulation', d.type_amt + ' mg' + d.medType],
+            ['Hydroxyurea Formulation', formulationLabel(d.med_type)],
             ['Laboratory Values Provided', d.labsTrue ? 'Yes' : 'No'],
-            ['Laboratory Toxicity Detected', rec.startsWith("Laboratory Toxicity") ? 'Yes' : 'No'],
-
+            ['Laboratory Toxicity Detected', toxicityStatus(d)],
         ]) +
         scheduleSection('Recommended Starting Dose Schedule', current) +
         (escalation ? scheduleSection('Escalation Schedule', escalation) : '') +
@@ -123,29 +131,28 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
     const labsTrue = document.querySelector('input[name="labs"]:checked').value === 'true';
 
     let labs = null;
-    // if (labsTrue) {
-    //     labs = {
-    //         hemoglobin: parseFloat(document.getElementById('hemoglobinInput').value) || 0,
-    //         reticulocyte: parseFloat(document.getElementById('reticulocyteInput').value) || 0,
-    //         rbc: parseFloat(document.getElementById('rbcInput').value) || 0,
-    //         platelet: parseFloat(document.getElementById('plateletInput').value) || 0,
-    //         reticulocyte_percent: parseFloat(document.getElementById('reticulocytePercentInput').value) || 0,
-    //         neutrophil: parseFloat(document.getElementById('neutrophilInput').value) || 0,
-    //     };
-    // }
-        if (labsTrue) {
-        const raw = {
+    if (labsTrue) {
+        // A blank lab stays NaN (not 0), so a skipped optional field can't trigger a false toxicity
+        labs = {
             hemoglobin: parseFloat(document.getElementById('hemoglobinInput').value),
-            neutrophil: parseFloat(document.getElementById('neutrophilInput').value),
             reticulocyte: parseFloat(document.getElementById('reticulocyteInput').value),
+            rbc: parseFloat(document.getElementById('rbcInput').value) || 0,
             platelet: parseFloat(document.getElementById('plateletInput').value),
+            reticulocyte_percent: parseFloat(document.getElementById('reticulocytePercentInput').value) || 0,
+            neutrophil: parseFloat(document.getElementById('neutrophilInput').value),
         };
-        // If the ARC will be worked out from RBC and reticulocyte %, check that value too
-        const rbc = parseFloat(document.getElementById('rbcInput').value);
-        const pct = parseFloat(document.getElementById('reticulocytePercentInput').value);
-        if (isNaN(raw.reticulocyte) && !isNaN(rbc) && !isNaN(pct)) raw.reticulocyte = pct / 100 * rbc;
 
-        const rangeMsg = labRangeMessage(raw);
+        if (isNaN(labs.neutrophil)) {
+            renderResult("Please enter the Absolute Neutrophil Count.", {});
+            document.getElementById('outputBox').style.display = 'block';
+            notifyParentOfResize();
+            return;
+        }
+
+        // Check the ARC that will actually be used, including one derived from RBC and %
+        const arc = isNaN(labs.reticulocyte) && labs.rbc && labs.reticulocyte_percent
+            ? labs.reticulocyte_percent / 100 * labs.rbc : labs.reticulocyte;
+        const rangeMsg = labRangeMessage({ ...labs, reticulocyte: arc });
         if (rangeMsg) {
             renderResult(rangeMsg, {});
             document.getElementById('outputBox').style.display = 'block';
@@ -154,16 +161,14 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
         }
     }
 
-    // const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);
     lastArgs = { weight, medType, dosing, typeAmt, labsTrue, labs };
     const recommendation = calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue, labs);
 
     lastRecommendation = recommendation;
-    lastPdfData = { weight, med_type: medTypeRaw, dosing, type_amt: typeAmt };
+    lastPdfData = { weight, med_type: medTypeRaw, dosing, type_amt: typeAmt, labsTrue, toxicity: false };
 
     renderResult(recommendation, lastPdfData);
     document.getElementById('outputBox').style.display = 'block';
-    document.getElementById('feedbackBox').style.display = 'block';
 
     notifyParentOfResize();
 });
@@ -215,9 +220,10 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
         head: [["Parameter", "Value"]],
         body: [
             ["Patient Weight", lastPdfData.weight + " kg"],
-            // ["Formulation", lastPdfData.med_type.replace("_", " mg ")],
             ["Preferred Starting mg/kg dose", lastPdfData.dosing + " mg/kg/day"],
-            ["Hydroxyurea Formulation", lastPdfData.type_amt + " mg"],
+            ["Hydroxyurea Formulation", formulationLabel(lastPdfData.med_type)],
+            ["Laboratory Values Provided", lastPdfData.labsTrue ? "Yes" : "No"],
+            ["Laboratory Toxicity Detected", toxicityStatus(lastPdfData)],
         ],
     });
     y = doc.lastAutoTable.finalY + 24;
@@ -225,7 +231,7 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
 
     const { current, escalation } = parseBlocks(lastRecommendation);
     const currentRows = parseSchedule(current);
-    const currentHeader = current.split("\n").find(l => l.trim()).trim();
+    const currentHeader = current.split("\n").map(l => l.trim()).find(l => /^Recommended/i.test(l)) || current.split("\n").find(l => l.trim()).trim();
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -281,7 +287,6 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function () 
     doc.save("HU_dosing_" + lastPdfData.weight + "kg_" + dateStr.replace(/ /g, "_") + ".pdf");
 });
 
-// 
 /*  Let the parent (Wix) know our height, for iframe resizing  */
 function notifyParentOfResize() {
     if (window.parent !== window) {
@@ -292,7 +297,7 @@ window.addEventListener('load', notifyParentOfResize);
 document.querySelectorAll('input[name="labs"]').forEach(r => r.addEventListener('change', () => setTimeout(notifyParentOfResize, 50)));
 
 
-
+/*  ARC from RBC and reticulocyte %, filled in as the user types  */
 function updateArcFromRbc() {
     const rbc = parseFloat(document.getElementById('rbcInput').value);
     const pct = parseFloat(document.getElementById('reticulocytePercentInput').value);

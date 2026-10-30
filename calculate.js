@@ -20,6 +20,7 @@ function labRangeMessage(labs) {
         ? "Laboratory value entered is out of range. Check units and result for accuracy.\n\n" + bad.join("\n")
         : null;
 }
+
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function pythonRound(x) {
@@ -63,19 +64,14 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     if (dosePerDay % typeAmt === 0) {
         const caps = Math.floor(dosePerDay / typeAmt);
         const schedule = buildSchedule(caps, 0);
-        // return `${note}Recommended dose: ${Math.round(dosePerDay)} mg/day (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
-        return `${note}Recommended Dose: (${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
-
+        return `${note}Recommended Starting Dose: (${Math.round(dosePerDay)} mg once daily, ${caps} ${caps === 1 ? "capsule" : "capsules"}/day)\n\nWeekly schedule:\n${schedule}`;
     }
     const capsDown = Math.floor(dosePerWeek / typeAmt);
     const capsUp = Math.ceil(dosePerWeek / typeAmt);
     const currentSchedule = formatScheduleBlock(capsDown);
     const currentMg = (capsDown * typeAmt) / 7;
     const lines = [
-        // `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
-        // `  → ${capsDown} capsules/week (${Math.round(currentMg)} mg/day average)\n`,
-        // `Weekly schedule:\n${currentSchedule}`,
-         `Recommended Starting Dose: (${Math.round(currentMg)} mg once daily )\n`,
+        `${note}Recommended Starting Dose: (${Math.round(currentMg)} mg once daily)\n`,
         `Weekly schedule:\n${currentSchedule}`,
     ];
     if (capsUp !== capsDown) {
@@ -91,23 +87,14 @@ function capsuleDosing(dosePerWeek, dosePerDay, typeAmt, dosing, note = "") {
     return lines.join("\n");
 }
 
-// function toxicityReasons(labs) {
-//     const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
-//     const reasons = [];
-//     if (n < 0.75) reasons.push(`neutrophils ${n} x10^9/L (<0.75)`);
-//     if (p < 80) reasons.push(`platelets ${p} x10^9/L (<80)`);
-//     if (r < 50 && hb < 7) reasons.push(`reticulocytes ${r} x10^9/L (<50) with hemoglobin ${hb} g/dL (<7)`);
-//     return reasons;
-// }
 function toxicityReasons(labs) {
     const n = labs.neutrophil, p = labs.platelet, r = labs.reticulocyte, hb = labs.hemoglobin;
     const reasons = [];
     if (n < 0.75) reasons.push(`Absolute neutrophil count ${n} ×10⁹/L is below 0.75 ×10⁹/L`);
     if (p < 80) reasons.push(`Platelet count ${p} ×10⁹/L is below 80 ×10⁹/L`);
-    if (r < 50 && hb < 7) reasons.push(`Absolute reticulocyte count ${r} ×10⁹/L is below 50 ×10⁹/L with Hemoglobin ${hb} g/dL below 7 g/dL`);
+    if (r < 50 && hb < 7) reasons.push(`Absolute reticulocyte count ${r} ×10⁹/L is below 50 ×10⁹/L with hemoglobin ${hb} g/dL below 7 g/dL`);
     return reasons;
 }
-
 
 function formatToxicityMessage(reasons) {
     return "Laboratory Toxicity detected - dose hold/reduction recommended.\n\n" +
@@ -121,21 +108,19 @@ function calculateToxicity(labs) {
     if (n > 3.0 && p > 100 && (r > 50 && hb > 7)) return "Dose increase recommended";
     if (n > 1.5 && p > 120 && ((r > 100 && hb < 8) || (r > 75 && hb > 8))) return "Dose adjustment for weight gain recommended";
     const reasons = toxicityReasons(labs);
-    // if (reasons.length ) return "Laboratory Toxicity Detected- dose hold/reduction recommended because \n" + reasons.join("; ") + ". Please refer to the toxicity criteria in the About Page";
     if (reasons.length) return formatToxicityMessage(reasons);
-    // if (n < 0.75 || p < 80 || (r < 50 && hb < 7)) return "Laboratory Toxicity - dose hold/reduction recommended";
     return "Dose is optimized, do not change";
 }
 
 function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = false, labs = null, override = false) {
     if (labsTrue) {
-        if (labs.reticulocyte === 0 && labs.reticulocyte_percent && labs.rbc) {
+        // A blank (NaN) or 0 ARC is worked out from reticulocyte % and RBC when both are given
+        if (!labs.reticulocyte && labs.reticulocyte_percent && labs.rbc) {
             labs.reticulocyte = labs.reticulocyte_percent / 100 * labs.rbc;
         }
         const tox = calculateToxicity(labs);
         if (tox.includes("Laboratory Toxicity") && !override) {
-            // return "Laboratory Toxicity detected. Please review the patient's labs before calculating the initiating hydroxyurea dose.";
-           return tox;
+            return tox;
         }
     }
     const MAX_DAILY_DOSE = 2500;
@@ -151,16 +136,14 @@ function calculateInitialDosing(weight, medType, dosing, typeAmt, labsTrue = fal
         // 0.1 mL is the finest practical measure, so round the volume first,
         // then show the mg that volume actually delivers.
         const mlPerDay = Math.round(dosePerDay / typeAmt * 10) / 10;
-        // return `Recommended dose: ${Math.round(mlPerDay * typeAmt)} mg/day (${mlPerDay.toFixed(1)} mL/day)`;
-        return `Recommended Starting Dose: ${Math.round(mlPerDay * typeAmt)} mg once daily (${mlPerDay.toFixed(1)} mL/day)`;
-
+        return `${note}Recommended Starting Dose: ${Math.round(mlPerDay * typeAmt)} mg once daily (${mlPerDay.toFixed(1)} mL/day)`;
     }
     if (medType === "Siklos") {
         const capsDown = Math.floor(dosePerWeek / 250);
         const capsUp = Math.ceil(dosePerWeek / 250);
         const currentSchedule = formatScheduleBlock(capsDown);
         const lines = [
-            `Recommended dose: ~${Math.round(dosePerDay)} mg/day`,
+            `${note}Recommended Starting Dose: (~${Math.round(dosePerDay)} mg once daily)`,
             `  → ${capsDown} scored tablet block(s)/week\n`,
             `Weekly schedule:\n${currentSchedule}`,
         ];
