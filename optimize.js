@@ -104,7 +104,7 @@ function renderOptimizeResult(text) {
     view.innerHTML =
         '<div class="rec-report">' +
         '<p class="rec-message">' + esc(intro) + '</p>' +
-        '<h4>New Dose Schedule</h4>' +
+        '<h4>New Recommended Dosing Schedule</h4>' +
         tableHtml(['Day', 'Dose'], rows) +
         '<p class="rec-footer">Clinical decision support tool only. Always confirm with a qualified clinician.</p>' +
         '</div>';
