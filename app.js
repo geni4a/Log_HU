@@ -133,117 +133,31 @@ document.getElementById('dosingForm').addEventListener('submit', function (e) {
 });
 
 
-/*  PDF download (same jsPDF logic as the original app)  */
+/*  PDF download (the PDF builder is shared with the optimization page: see pdf.js)  */
 document.getElementById('downloadPdfBtn').addEventListener('click', function () {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: "pt", format: "letter" });
-    const margin = 50;
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    let y = margin;
-
-    const tableStyle = {
-        theme: "plain",
-        margin: { left: margin, right: margin },
-        styles: { fontSize: 10, cellPadding: 5, lineColor: [180, 180, 180], lineWidth: 0.5 },
-        headStyles: { fontStyle: "bold", fillColor: [240, 240, 240], textColor: [0, 0, 0] },
-        columnStyles: { 0: { cellWidth: 180 } },
-    };
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Hydroxyurea Initial Dosing Recommendation", margin, y);
-    y += 18;
-
-    const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text("Generated: " + dateStr, margin, y);
-    y += 16;
-
-    doc.setDrawColor(0);
-    doc.line(margin, y, pageW - margin, y);
-    y += 20;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Prescription Summary", margin, y);
-    y += 6;
-
-    doc.autoTable({
-        ...tableStyle,
-        startY: y,
-        head: [["Parameter", "Value"]],
-        body: [
-            ["Patient Weight", lastPdfData.weight + " kg"],
-            ["Preferred Starting mg/kg dose", lastPdfData.dosing + " mg/kg/day"],
-            ["Hydroxyurea Formulation", formulationLabel(lastPdfData.med_type)],
-            ["Laboratory Values Provided", lastPdfData.labsTrue ? "Yes" : "No"],
-            ["Laboratory Toxicity Detected", toxicityStatus(lastPdfData)],
-        ],
-    });
-    y = doc.lastAutoTable.finalY + 24;
-
-
+    const d = lastPdfData;
     const { current, escalation } = parseBlocks(lastRecommendation);
-    const currentRows = parseSchedule(current);
-    const currentHeader = current.split("\n").map(l => l.trim()).find(l => /^Recommended/i.test(l)) || current.split("\n").find(l => l.trim()).trim();
+    const headerOf = block => block.split("\n").map(l => l.trim()).find(l => /^(Recommended|Escalation)/i.test(l)) || block.split("\n").find(l => l.trim()).trim();
+    const section = (title, block) => {
+        const rows = parseSchedule(block);
+        const header = headerOf(block);
+        return { title, header, rows: rows.length ? rows : [["\u2014", header]] };
+    };
+    const sections = [section("Recommended Starting Dose Schedule", current)];
+    if (escalation) sections.push(section("Escalation Schedule", escalation));
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Recommended Starting Dose Schedule", margin, y);
-    y += 16;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(currentHeader, margin, y);
-    y += 8;
-
-    doc.autoTable({
-        ...tableStyle,
-        startY: y,
-        head: [["Day", "Dose"]],
-        body: currentRows.length > 0 ? currentRows : [["—", currentHeader]],
+    createReportPdf({
+        title: "Hydroxyurea Initial Dosing Recommendation",
+        summary: [
+            ["Patient Weight", d.weight + " kg"],
+            ["Preferred Starting mg/kg dose", d.dosing + " mg/kg/day"],
+            ["Hydroxyurea Formulation", formulationLabel(d.med_type)],
+            ["Laboratory Values Provided", d.labsTrue ? "Yes" : "No"],
+            ["Laboratory Toxicity Detected", toxicityStatus(d)],
+        ],
+        sections: sections,
+        filename: "HU_dosing_" + d.weight + "kg_" + pdfDateStamp(),
     });
-    y = doc.lastAutoTable.finalY + 24;
-
-    if (escalation) {
-        const escalationRows = parseSchedule(escalation);
-        const escalationHeader = escalation.split("\n").find(l => l.trim()).trim();
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(0, 0, 0);
-        doc.text("Escalation Schedule", margin, y);
-        y += 16;
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(60, 60, 60);
-        doc.text(escalationHeader, margin, y);
-        y += 8;
-
-        doc.autoTable({
-            ...tableStyle,
-            startY: y,
-            head: [["Day", "Dose"]],
-            body: escalationRows.length > 0 ? escalationRows : [["—", escalationHeader]],
-        });
-    }
-
-    doc.setDrawColor(180, 180, 180);
-    doc.line(margin, pageH - 40, pageW - margin, pageH - 40);
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(120, 120, 120);
-    doc.text("Clinical decision support tool only. Always confirm with a qualified clinician.", pageW / 2, pageH - 24, { align: "center" });
-
-    doc.save("HU_dosing_" + lastPdfData.weight + "kg_" + dateStr.replace(/ /g, "_") + ".pdf");
 });
 
 /*  Let the parent (Wix) know our height, for iframe resizing  */

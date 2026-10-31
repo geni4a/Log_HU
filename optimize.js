@@ -10,7 +10,7 @@ const LAB_NAMES = {
     platelet: "Platelet Count",
 };
 
-/*  formulation and dose box  */
+/* ---------------- formulation and dose box ---------------- */
 
 // mg in one capsule, one Siklos block (250 mg, as on the Initial Dosing page), or per mL of liquid
 function unitMg(medTypeValue) {
@@ -50,7 +50,7 @@ document.getElementById('dose').addEventListener('input', function () {
     document.getElementById('caps_dose').value = '';
 });
 
-/*  escalation dose and how to take it  */
+/* ---------------- escalation dose and how to take it ---------------- */
 
 function escalationMessage(weight, currentDose, medTypeValue) {
     const targetDaily = Math.min(currentDose + OPT_ESCALATION_STEP_MG_PER_KG * weight, OPT_MAX_DAILY_MG, OPT_MAX_MG_PER_KG * weight);
@@ -87,7 +87,7 @@ function escalationMessage(weight, currentDose, medTypeValue) {
            `Weekly schedule:\n${formatScheduleBlock(perWeek, scheduleUnit)}`;
 }
 
-/*  showing the result  */
+/* ---------------- showing the result ---------------- */
 
 function renderOptimizeResult(text) {
     const view = document.getElementById('resultView');
@@ -104,17 +104,44 @@ function renderOptimizeResult(text) {
     view.innerHTML =
         '<div class="rec-report">' +
         '<p class="rec-message">' + esc(intro) + '</p>' +
-        '<h4>New Recommended Dosing Schedule</h4>' +
+        '<h4>New Dose Schedule</h4>' +
         tableHtml(['Day', 'Dose'], rows) +
         '<p class="rec-footer">Clinical decision support tool only. Always confirm with a qualified clinician.</p>' +
         '</div>';
 }
 
-function show(text) {
+// What the PDF will contain; set by runOptimize when a result is worth saving
+let lastOptimizePdf = null;
+
+// asReport = false for error-type messages (out of range, nothing entered): no PDF button
+function show(text, asReport) {
     renderOptimizeResult(text);
     document.getElementById('outputBox').style.display = 'block';
+    document.getElementById('downloadPdfBtn').style.display = asReport ? '' : 'none';
+    if (!asReport) lastOptimizePdf = null;
     notifyParentOfResize();
 }
+
+function downloadOptimizePdf() {
+    const p = lastOptimizePdf;
+    if (!p) return;
+    const rows = parseSchedule(p.text);
+    const sections = [];
+    if (rows.length) {
+        const intro = p.text.slice(0, p.text.indexOf("Weekly schedule:")).trim();
+        sections.push({ title: "Recommendation", text: intro });
+        sections.push({ title: "New Dose Schedule", rows: rows });
+    } else {
+        sections.push({ title: "Recommendation", text: p.text });
+    }
+    createReportPdf({
+        title: "Hydroxyurea Dose Optimization Recommendation",
+        summary: p.summary,
+        sections: sections,
+        filename: "HU_optimization_" + p.weight + "kg_" + pdfDateStamp(),
+    });
+}
+document.getElementById('downloadPdfBtn').addEventListener('click', downloadOptimizePdf);
 
 // Shown when some labs are blank: lets the user go back and add them, or continue without
 function showIncompletePrompt(missing) {
@@ -126,6 +153,7 @@ function showIncompletePrompt(missing) {
         '<div class="rec-report"><p class="rec-message">' + esc(text) + '</p>' +
         '<p><button type="button" id="proceedIncompleteBtn">Proceed without these values</button></p></div>';
     document.getElementById('outputBox').style.display = 'block';
+    document.getElementById('downloadPdfBtn').style.display = 'none';
     document.getElementById('proceedIncompleteBtn').addEventListener('click', function () { runOptimize(true); });
     notifyParentOfResize();
 }
@@ -138,7 +166,7 @@ function incompleteLabsMessage(labs, missing) {
     return "No laboratory toxicity was identified from the values entered, but a dose increase cannot be recommended without a complete set of laboratory values.\n\n" + note;
 }
 
-/*  the calculation  */
+/* ---------------- the calculation ---------------- */
 
 function runOptimize(allowIncomplete) {
     const labs = {
@@ -149,10 +177,10 @@ function runOptimize(allowIncomplete) {
     };
     const missing = Object.keys(LAB_NAMES).filter(k => isNaN(labs[k])).map(k => LAB_NAMES[k]);
 
-    if (missing.length === 4) return show("Please enter at least one laboratory value.");
+    if (missing.length === 4) return show("Please enter at least one laboratory value.", false);
 
     const rangeMsg = labRangeMessage(labs);
-    if (rangeMsg) return show(rangeMsg);
+    if (rangeMsg) return show(rangeMsg, false);
 
     if (missing.length && !allowIncomplete) return showIncompletePrompt(missing);
 
@@ -181,7 +209,23 @@ function runOptimize(allowIncomplete) {
     } else if (labsIncrease) {
         message = escalationMessage(weight, currentDose, medTypeValue);
     }
-    show(message);
+    const labText = k => isNaN(labs[k]) ? "not entered" : labs[k];
+    lastOptimizePdf = {
+        text: message,
+        weight: weight,
+        summary: [
+            ["Patient Weight", weight + " kg"],
+            ["Formulation", document.getElementById('medType').selectedOptions[0].textContent],
+            ["Current Daily Dose", currentDose + " mg (" + (currentDose / weight).toFixed(1) + " mg/kg/day)"],
+            ["Dose Escalation in Last 2 Months", recentEscalation ? "Yes" : "No"],
+            ["Dose Reduction in Last 2 Months", recentReduction ? "Yes" : "No"],
+            ["Hemoglobin", labText('hemoglobin') + (isNaN(labs.hemoglobin) ? "" : " g/dL")],
+            ["Absolute Neutrophil Count", labText('neutrophil') + (isNaN(labs.neutrophil) ? "" : " x10^9/L")],
+            ["Absolute Reticulocyte Count", labText('reticulocyte') + (isNaN(labs.reticulocyte) ? "" : " x10^9/L")],
+            ["Platelet Count", labText('platelet') + (isNaN(labs.platelet) ? "" : " x10^9/L")],
+        ],
+    };
+    show(message, true);
 }
 
 document.getElementById('optimizeForm').addEventListener('submit', function (e) {
